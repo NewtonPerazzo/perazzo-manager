@@ -6,6 +6,8 @@ interface ProductListParams {
   limit: number;
   search?: string;
   categoryId?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
 }
 
 export interface ProductListResponse {
@@ -21,7 +23,9 @@ export const productService = {
           skip: params.skip,
           limit: params.limit,
           search: params.search || undefined,
-          category_id: params.categoryId || undefined
+          category_id: params.categoryId || undefined,
+          sort_by: params.sortBy || undefined,
+          sort_order: params.sortOrder || undefined
         }
       });
 

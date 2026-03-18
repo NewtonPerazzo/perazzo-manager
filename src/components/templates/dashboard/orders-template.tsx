@@ -29,6 +29,14 @@ import type { OrderCreatePayload, OrderResponse, OrderStatus } from "@/types/api
 
 const PAGE_SIZE = 10;
 
+function getCatalogBaseUrl(): string {
+  const envBase =
+    process.env.NEXT_PUBLIC_CATALOG_BASE_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    (typeof window !== "undefined" ? window.location.origin : "");
+  return envBase.replace(/\/$/, "");
+}
+
 function getTodayDateInputValue(): string {
   const now = new Date();
   const year = now.getFullYear();
@@ -41,12 +49,14 @@ export function OrdersTemplate({
   initialData,
   paymentMethods,
   deliveryMethods,
-  initialStoreWhatsapp
+  initialStoreWhatsapp,
+  initialStoreSlug
 }: {
   initialData: OrderResponse[];
   paymentMethods: PaymentMethodResponse[];
   deliveryMethods: DeliveryMethodResponse[];
   initialStoreWhatsapp?: string | null;
+  initialStoreSlug?: string | null;
 }) {
   const { t } = useI18n();
   const router = useRouter();
@@ -65,6 +75,7 @@ export function OrdersTemplate({
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState(getTodayDateInputValue());
   const [storeWhatsapp, setStoreWhatsapp] = useState(initialStoreWhatsapp ?? "");
+  const [storeSlug, setStoreSlug] = useState(initialStoreSlug ?? "");
   const [availableProducts, setAvailableProducts] = useState<ProductResponse[]>([]);
   const [availablePaymentMethods, setAvailablePaymentMethods] = useState<PaymentMethodResponse[]>(
     paymentMethods
@@ -104,6 +115,22 @@ export function OrdersTemplate({
     }, 500);
     return () => clearTimeout(timeout);
   }, [loadOrders]);
+
+  useEffect(() => {
+    async function loadStoreSummary() {
+      if (!token) return;
+      if (storeWhatsapp && storeSlug) return;
+      try {
+        const store = await storeService.getMyStore(token);
+        setStoreWhatsapp((prev) => prev || store.whatsapp || "");
+        setStoreSlug((prev) => prev || store.slug || "");
+      } catch {
+        // Keep order flow available even if store summary fails.
+      }
+    }
+
+    void loadStoreSummary();
+  }, [storeSlug, storeWhatsapp, token]);
 
   useEffect(() => {
     async function loadOrderDependencies() {
@@ -266,14 +293,19 @@ export function OrdersTemplate({
     }
 
     lines.push("------------------------------");
+    if (order.observation?.trim()) {
+      lines.push(`Observação: ${order.observation.trim()}`);
+      lines.push("------------------------------");
+    }
     lines.push(`Itens: R$${itemsTotal.toFixed(2).replace(".", ",")}`);
     lines.push("");
     lines.push(`TOTAL: R$${order.total_price.toFixed(2).replace(".", ",")}`);
     lines.push("------------------------------");
-    lines.push(`Pagamento: ${order.payment_method}`);
-    lines.push("");
-    lines.push("Para repetir o pedido 👇🏻:");
-    lines.push("");
+    const repeatUrl = storeSlug ? `${getCatalogBaseUrl()}/catalog/${storeSlug}` : "";
+    if (repeatUrl) {
+      lines.push("");
+      lines.push(`Para repetir o pedido: ${repeatUrl}`);
+    }
 
     return lines.join("\n");
   }
@@ -394,7 +426,7 @@ export function OrdersTemplate({
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-4">
           {error ? <p className="text-sm text-red-300">{error}</p> : null}
           {isLoadingOrders && orders.length === 0 ? (
             <ListSkeleton items={3} className="space-y-2" itemClassName="h-36 w-full rounded-xl" />
@@ -403,15 +435,17 @@ export function OrdersTemplate({
             <p className="text-sm text-slate-300">{t("common.empty")}</p>
           ) : (
             !isLoadingOrders &&
-            orders.map((order) => (
-              <OrderCard
-                key={order.id}
-                order={order}
-                onSendWhatsapp={startSendWhatsapp}
-                onStatusChange={handleStatusChange}
-                onEdit={openEditModal}
-                onDelete={setDeletingOrder}
-              />
+            orders.map((order, index) => (
+              <div key={order.id} className="space-y-4">
+                <OrderCard
+                  order={order}
+                  onSendWhatsapp={startSendWhatsapp}
+                  onStatusChange={handleStatusChange}
+                  onEdit={openEditModal}
+                  onDelete={setDeletingOrder}
+                />
+                {index < orders.length - 1 ? <div className="border-b border-surface-700/70" /> : null}
+              </div>
             ))
           )}
         </div>

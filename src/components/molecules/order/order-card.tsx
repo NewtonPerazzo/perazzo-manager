@@ -54,7 +54,7 @@ export function OrderCard({
               className="h-[52px] w-[52px] shrink-0 rounded-md border border-surface-700 object-cover"
             />
             <div className="min-w-0">
-              <p className="truncate text-sm text-slate-100">{item.product.name}</p>
+              <p className="break-words text-sm text-slate-100">{item.product.name}</p>
               <p className="text-xs text-slate-300">{`R$ ${item.product.price.toFixed(2)}`}</p>
               <p className="text-xs text-slate-400">{`x${item.amount}`}</p>
             </div>

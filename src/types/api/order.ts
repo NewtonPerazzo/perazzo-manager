@@ -59,6 +59,7 @@ export interface OrderResponse {
   delivery_method?: DeliveryMethodResponse | null;
   status: OrderStatus;
   payment_method: string;
+  observation?: string | null;
   total_price: number;
   created_at: string;
   updated_at: string;

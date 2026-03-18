@@ -34,6 +34,10 @@ function isHexColor(value: string): boolean {
   return /^#([0-9a-fA-F]{6})$/.test(value);
 }
 
+function hasValidWhatsapp(value?: string | null): boolean {
+  return (value ?? "").replace(/\D/g, "").length >= 8;
+}
+
 export function StoreForm({ initialData, onSubmit, submitLabel }: StoreFormProps) {
   const { t } = useI18n();
 
@@ -59,13 +63,17 @@ export function StoreForm({ initialData, onSubmit, submitLabel }: StoreFormProps
       color: initialData?.color ?? DEFAULT_STORE_COLOR,
       does_delivery: initialData?.does_delivery ?? false,
       does_pick_up: initialData?.does_pick_up ?? false,
-      has_catalog_active: initialData?.has_catalog_active ?? false
+      has_catalog_active: initialData?.has_catalog_active ?? false,
+      is_accepted_send_order_to_whatsapp: initialData?.is_accepted_send_order_to_whatsapp ?? false
     }
   });
 
   const colorValue = watch("color") ?? DEFAULT_STORE_COLOR;
   const pickerColor = isHexColor(colorValue) ? colorValue : DEFAULT_STORE_COLOR;
   const logoValue = watch("logo") ?? "";
+  const whatsappValue = watch("whatsapp") ?? "";
+  const isAcceptedSendToWhatsapp = Boolean(watch("is_accepted_send_order_to_whatsapp"));
+  const canEnableSendToWhatsapp = hasValidWhatsapp(whatsappValue);
 
   useEffect(() => {
     reset({
@@ -80,15 +88,32 @@ export function StoreForm({ initialData, onSubmit, submitLabel }: StoreFormProps
       color: initialData?.color ?? DEFAULT_STORE_COLOR,
       does_delivery: initialData?.does_delivery ?? false,
       does_pick_up: initialData?.does_pick_up ?? false,
-      has_catalog_active: initialData?.has_catalog_active ?? false
+      has_catalog_active: initialData?.has_catalog_active ?? false,
+      is_accepted_send_order_to_whatsapp: initialData?.is_accepted_send_order_to_whatsapp ?? false
     });
   }, [initialData, reset]);
 
+  useEffect(() => {
+    if (!canEnableSendToWhatsapp && isAcceptedSendToWhatsapp) {
+      setValue("is_accepted_send_order_to_whatsapp", false, { shouldValidate: true });
+    }
+  }, [canEnableSendToWhatsapp, isAcceptedSendToWhatsapp, setValue]);
+
   return (
-    <form className="grid gap-3" onSubmit={handleSubmit(onSubmit)}>
+    <form
+      className="grid gap-3"
+      onSubmit={handleSubmit(async (values) => {
+        await onSubmit({
+          ...values,
+          is_accepted_send_order_to_whatsapp: canEnableSendToWhatsapp
+            ? Boolean(values.is_accepted_send_order_to_whatsapp)
+            : false
+        });
+      })}
+    >
       <Field label={t("store.name")}>
         <Input {...register("name")} required />
-        {errors.name ? <p className="text-xs text-red-300">{t("common.invalidField")}</p> : null}
+        {errors.name ? <p className="text-xs text-red-300">{errors.name.message ?? t("common.invalidField")}</p> : null}
       </Field>
       <Field label={t("store.description")}>
         <Textarea {...register("description")} />
@@ -112,7 +137,7 @@ export function StoreForm({ initialData, onSubmit, submitLabel }: StoreFormProps
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label={t("store.email")}>
           <Input type="email" {...register("email")} />
-          {errors.email ? <p className="text-xs text-red-300">{t("common.invalidField")}</p> : null}
+          {errors.email ? <p className="text-xs text-red-300">{errors.email.message ?? t("common.invalidField")}</p> : null}
         </Field>
         <Field label={t("store.instagram")}>
           <Input {...register("instagram")} />
@@ -147,7 +172,7 @@ export function StoreForm({ initialData, onSubmit, submitLabel }: StoreFormProps
               }}
             />
           </div>
-          {errors.color ? <p className="text-xs text-red-300">{t("common.invalidField")}</p> : null}
+          {errors.color ? <p className="text-xs text-red-300">{errors.color.message ?? t("common.invalidField")}</p> : null}
         </Field>
       </div>
 
@@ -182,7 +207,24 @@ export function StoreForm({ initialData, onSubmit, submitLabel }: StoreFormProps
           />
           {t("store.catalogActive")}
         </label>
+        <label className="flex items-center gap-2 text-sm text-slate-200">
+          <Controller
+            control={control}
+            name="is_accepted_send_order_to_whatsapp"
+            render={({ field }) => (
+              <Switch
+                checked={Boolean(field.value)}
+                onChange={(value) => field.onChange(value)}
+                disabled={!canEnableSendToWhatsapp}
+              />
+            )}
+          />
+          {t("store.acceptSendOrderToWhatsapp")}
+        </label>
       </div>
+      {!canEnableSendToWhatsapp ? (
+        <p className="text-xs text-amber-300">{t("store.acceptSendOrderToWhatsappHint")}</p>
+      ) : null}
       <Button type="submit" disabled={isSubmitting}>
         {isSubmitting ? t("common.loading") : submitLabel ?? t("common.save")}
       </Button>

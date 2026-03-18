@@ -13,6 +13,7 @@ export interface StoreCreatePayload {
   logo?: string | null;
   color?: string | null;
   has_catalog_active?: boolean;
+  is_accepted_send_order_to_whatsapp?: boolean;
 }
 
 export interface StoreUpdatePayload {
@@ -28,6 +29,7 @@ export interface StoreUpdatePayload {
   logo?: string | null;
   color?: string | null;
   has_catalog_active?: boolean;
+  is_accepted_send_order_to_whatsapp?: boolean;
 }
 
 export interface StoreResponse {
@@ -45,4 +47,5 @@ export interface StoreResponse {
   logo?: string | null;
   color?: string | null;
   has_catalog_active: boolean;
+  is_accepted_send_order_to_whatsapp: boolean;
 }

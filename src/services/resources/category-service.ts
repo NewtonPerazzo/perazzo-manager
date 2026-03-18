@@ -9,7 +9,7 @@ export const categoryService = {
   async list(token: string): Promise<CategoryResponse[]> {
     try {
       const { data } = await createApiClient(token).get<CategoryResponse[]>("/categories", {
-        params: { skip: 0, limit: 20 }
+        params: { skip: 0, limit: 200 }
       });
       return data;
     } catch (error) {
@@ -45,6 +45,17 @@ export const categoryService = {
   async remove(token: string, categoryId: string): Promise<void> {
     try {
       await createApiClient(token).delete(`/categories/${categoryId}`);
+    } catch (error) {
+      throw normalizeApiError(error);
+    }
+  },
+
+  async reorder(token: string, categoryIds: string[]): Promise<CategoryResponse[]> {
+    try {
+      const { data } = await createApiClient(token).post<CategoryResponse[]>("/categories/reorder", {
+        category_ids: categoryIds
+      });
+      return data;
     } catch (error) {
       throw normalizeApiError(error);
     }

@@ -58,7 +58,7 @@ export function DeliveryMethodForm({
     <form onSubmit={handleSubmit(submit)} className="grid gap-3">
       <Field label={t("deliveryMethods.name")}>
         <Input {...register("name")} required />
-        {errors.name ? <p className="text-xs text-red-300">{t("common.invalidField")}</p> : null}
+        {errors.name ? <p className="text-xs text-red-300">{errors.name.message ?? t("common.invalidField")}</p> : null}
       </Field>
 
       <Field label={t("deliveryMethods.price")}>
@@ -69,7 +69,7 @@ export function DeliveryMethodForm({
             <PriceInput value={Number(field.value ?? 0)} onChange={(value) => field.onChange(value)} />
           )}
         />
-        {errors.price ? <p className="text-xs text-red-300">{t("common.invalidField")}</p> : null}
+        {errors.price ? <p className="text-xs text-red-300">{errors.price.message ?? t("common.invalidField")}</p> : null}
       </Field>
 
       <Field label={t("deliveryMethods.description")}>

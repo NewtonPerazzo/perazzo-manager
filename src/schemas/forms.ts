@@ -113,7 +113,8 @@ export const storeSchema: z.ZodType<StoreCreatePayload> = z.object({
   email: optionalText.refine((value) => !value || z.string().email().safeParse(value).success),
   logo: optionalText,
   color: optionalText.refine((value) => !value || /^#([0-9a-fA-F]{6})$/.test(value)),
-  has_catalog_active: z.boolean().optional()
+  has_catalog_active: z.boolean().optional(),
+  is_accepted_send_order_to_whatsapp: z.boolean().optional()
 });
 
 export const productSchema: z.ZodType<ProductCreatePayload> = z.object({

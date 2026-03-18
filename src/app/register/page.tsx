@@ -9,6 +9,7 @@ import { Button } from "@/components/atoms/button";
 import { Card } from "@/components/atoms/card";
 import { Field } from "@/components/atoms/field";
 import { Input } from "@/components/atoms/input";
+import { LocaleSelect } from "@/components/molecules/common/locale-select";
 import { useI18n } from "@/i18n/provider";
 import { registerSchema } from "@/schemas/forms";
 import { authService } from "@/services/resources/auth-service";
@@ -57,6 +58,9 @@ export default function RegisterPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-surface-950 bg-atmosphere p-4">
       <Card className="w-full max-w-lg">
+        <div className="mb-3 flex justify-end">
+          <LocaleSelect />
+        </div>
         <h1 className="text-2xl font-semibold text-white">{t("auth.registerTitle")}</h1>
         <p className="mb-4 text-sm text-slate-300">{t("auth.registerSubtitle")}</p>
         {errors.root ? <p className="mb-3 text-sm text-red-300">{errors.root.message}</p> : null}
@@ -71,11 +75,11 @@ export default function RegisterPage() {
           </div>
           <Field label={t("auth.email")} required>
             <Input type="email" {...register("email")} required />
-            {errors.email ? <p className="text-xs text-red-300">{t("common.invalidField")}</p> : null}
+            {errors.email ? <p className="text-xs text-red-300">{errors.email.message ?? t("common.invalidField")}</p> : null}
           </Field>
           <Field label={t("auth.password")} required>
             <Input type="password" {...register("password")} required />
-            {errors.password ? <p className="text-xs text-red-300">{t("common.invalidField")}</p> : null}
+            {errors.password ? <p className="text-xs text-red-300">{errors.password.message ?? t("common.invalidField")}</p> : null}
           </Field>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label={t("auth.birthDate")}>

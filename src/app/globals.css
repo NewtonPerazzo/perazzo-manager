@@ -4,6 +4,7 @@
 
 :root {
   color-scheme: dark;
+  --focus-color: #469536;
 }
 
 * {
@@ -20,6 +21,22 @@ body {
 body {
   font-family: var(--font-space-grotesk), "Segoe UI", sans-serif;
   color: #f8fafc;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):focus,
+textarea:focus,
+select:focus {
+  border-color: var(--focus-color) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--focus-color) 30%, transparent) !important;
 }
 
 .react-colorful {

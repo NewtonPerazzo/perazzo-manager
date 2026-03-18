@@ -80,7 +80,7 @@ export function ProductForm({
     <form onSubmit={handleSubmit(submit)} className="grid gap-3">
       <Field label={t("products.name")}>
         <Input {...register("name")} required />
-        {errors.name ? <p className="text-xs text-red-300">{t("common.invalidField")}</p> : null}
+        {errors.name ? <p className="text-xs text-red-300">{errors.name.message ?? t("common.invalidField")}</p> : null}
       </Field>
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label={t("products.price")}>
@@ -91,7 +91,7 @@ export function ProductForm({
               <PriceInput value={Number(field.value ?? 0)} onChange={(value) => field.onChange(value)} />
             )}
           />
-          {errors.price ? <p className="text-xs text-red-300">{t("common.invalidField")}</p> : null}
+          {errors.price ? <p className="text-xs text-red-300">{errors.price.message ?? t("common.invalidField")}</p> : null}
         </Field>
         <Field label={t("products.stock")}>
           <Input
@@ -100,7 +100,7 @@ export function ProductForm({
               setValueAs: (value) => (value === "" ? undefined : Number(value))
             })}
           />
-          {errors.stock ? <p className="text-xs text-red-300">{t("common.invalidField")}</p> : null}
+          {errors.stock ? <p className="text-xs text-red-300">{errors.stock.message ?? t("common.invalidField")}</p> : null}
         </Field>
       </div>
       <Field label={t("store.description")}>
@@ -115,7 +115,7 @@ export function ProductForm({
           changeLabel={t("common.changeImage")}
           removeLabel={t("common.removeImage")}
         />
-        {errors.image_url ? <p className="text-xs text-red-300">{t("common.invalidField")}</p> : null}
+        {errors.image_url ? <p className="text-xs text-red-300">{errors.image_url.message ?? t("common.invalidField")}</p> : null}
       </Field>
       <Field label={t("products.categories")}>
         <select
@@ -129,7 +129,7 @@ export function ProductForm({
             </option>
           ))}
         </select>
-        {errors.category_id ? <p className="text-xs text-red-300">{t("common.invalidField")}</p> : null}
+        {errors.category_id ? <p className="text-xs text-red-300">{errors.category_id.message ?? t("common.invalidField")}</p> : null}
       </Field>
       <Button type="submit" disabled={isSubmitting}>
         {isSubmitting ? t("common.loading") : submitLabel ?? t("common.create")}

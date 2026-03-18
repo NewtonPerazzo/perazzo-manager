@@ -52,7 +52,7 @@ export function CategoryForm({
     <form onSubmit={handleSubmit(submit)} className="grid gap-3">
       <Field label={t("categories.name")}>
         <Input {...register("name")} required />
-        {errors.name ? <p className="text-xs text-red-300">{t("common.invalidField")}</p> : null}
+        {errors.name ? <p className="text-xs text-red-300">{errors.name.message ?? t("common.invalidField")}</p> : null}
       </Field>
       <Field label={t("categories.description")}>
         <Textarea {...register("description")} />

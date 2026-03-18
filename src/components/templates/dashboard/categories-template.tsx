@@ -23,12 +23,25 @@ export function CategoriesTemplate({ initialData }: { initialData: CategoryRespo
   const { runWithFeedback } = useUiFeedback();
   const isSubmitting = useUiFeedbackStore((state) => Boolean(state.loadingByKey["categories:submit"]));
   const isDeleting = useUiFeedbackStore((state) => Boolean(state.loadingByKey["categories:delete"]));
+  const isReordering = useUiFeedbackStore((state) => Boolean(state.loadingByKey["categories:reorder"]));
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<CategoryResponse | null>(null);
   const [categories, setCategories] = useState<CategoryResponse[]>(initialData);
   const [deletingCategory, setDeletingCategory] = useState<CategoryResponse | null>(null);
   const [isLoadingList, setIsLoadingList] = useState(initialData.length === 0);
+  const [draggingCategoryId, setDraggingCategoryId] = useState<string | null>(null);
+  const [touchDraggingCategoryId, setTouchDraggingCategoryId] = useState<string | null>(null);
+  const [isOrderDirty, setIsOrderDirty] = useState(false);
+
+  function sortByOrder(items: CategoryResponse[]): CategoryResponse[] {
+    return [...items].sort((a, b) => {
+      const aOrder = a.sort_order ?? Number.MAX_SAFE_INTEGER;
+      const bOrder = b.sort_order ?? Number.MAX_SAFE_INTEGER;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return a.name.localeCompare(b.name);
+    });
+  }
 
   useEffect(() => {
     async function loadCategories() {
@@ -37,7 +50,8 @@ export function CategoriesTemplate({ initialData }: { initialData: CategoryRespo
       setIsLoadingList(true);
       try {
         const items = await categoryService.list(token);
-        setCategories(items);
+        setCategories(sortByOrder(items));
+        setIsOrderDirty(false);
       } catch (err) {
         setError(err instanceof Error ? err.message : t("common.unexpectedError"));
       } finally {
@@ -57,10 +71,10 @@ export function CategoriesTemplate({ initialData }: { initialData: CategoryRespo
         setError(null);
         if (editingCategory) {
           const updated = await categoryService.update(token, editingCategory.id, payload);
-          setCategories((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+          setCategories((prev) => sortByOrder(prev.map((item) => (item.id === updated.id ? updated : item))));
         } else {
           const created = await categoryService.create(token, payload);
-          setCategories((prev) => [created, ...prev]);
+          setCategories((prev) => sortByOrder([...prev, created]));
         }
       },
       {
@@ -73,6 +87,7 @@ export function CategoriesTemplate({ initialData }: { initialData: CategoryRespo
     }
     setOpen(false);
     setEditingCategory(null);
+    setIsOrderDirty(false);
     router.refresh();
   }
 
@@ -107,6 +122,68 @@ export function CategoriesTemplate({ initialData }: { initialData: CategoryRespo
     }
     setCategories((prev) => prev.filter((item) => item.id !== category.id));
     setDeletingCategory(null);
+    setIsOrderDirty(false);
+    router.refresh();
+  }
+
+  function handleDropOn(targetId: string) {
+    if (!draggingCategoryId || draggingCategoryId === targetId) return;
+
+    setCategories((prev) => {
+      const sourceIndex = prev.findIndex((item) => item.id === draggingCategoryId);
+      const targetIndex = prev.findIndex((item) => item.id === targetId);
+      if (sourceIndex === -1 || targetIndex === -1) return prev;
+
+      const next = [...prev];
+      const [moved] = next.splice(sourceIndex, 1);
+      next.splice(targetIndex, 0, moved);
+      return next;
+    });
+    setIsOrderDirty(true);
+  }
+
+  function handleTouchMove(event: React.TouchEvent<HTMLDivElement>) {
+    if (!touchDraggingCategoryId) return;
+    event.preventDefault();
+
+    const touch = event.touches[0];
+    if (!touch) return;
+
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+    const item = element?.closest("[data-category-id]") as HTMLElement | null;
+    const targetId = item?.dataset.categoryId;
+    if (!targetId || targetId === touchDraggingCategoryId) return;
+
+    setCategories((prev) => {
+      const sourceIndex = prev.findIndex((category) => category.id === touchDraggingCategoryId);
+      const targetIndex = prev.findIndex((category) => category.id === targetId);
+      if (sourceIndex === -1 || targetIndex === -1) return prev;
+
+      const next = [...prev];
+      const [moved] = next.splice(sourceIndex, 1);
+      next.splice(targetIndex, 0, moved);
+      return next;
+    });
+    setTouchDraggingCategoryId(targetId);
+    setIsOrderDirty(true);
+  }
+
+  async function handleSaveOrder() {
+    if (!token || !isOrderDirty) return;
+
+    const result = await runWithFeedback(
+      "categories:reorder",
+      async () => {
+        const reordered = await categoryService.reorder(token, categories.map((category) => category.id));
+        setCategories(sortByOrder(reordered));
+        setIsOrderDirty(false);
+      },
+      {
+        successMessage: t("categories.orderSaved")
+      }
+    );
+
+    if (!result.ok) return;
     router.refresh();
   }
 
@@ -121,6 +198,42 @@ export function CategoriesTemplate({ initialData }: { initialData: CategoryRespo
           <Button onClick={openCreateModal} disabled={isSubmitting || isDeleting}>
             {t("common.addNew")}
           </Button>
+        </div>
+
+        <div className="mb-4 rounded-xl border border-surface-700 p-3">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <p className="text-sm font-medium text-slate-100">{t("categories.reorderTitle")}</p>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => void handleSaveOrder()}
+              disabled={!isOrderDirty || isReordering || isSubmitting || isDeleting}
+            >
+              {isReordering ? t("common.loading") : t("categories.saveOrder")}
+            </Button>
+          </div>
+          <p className="mb-3 text-xs text-slate-400">{t("categories.reorderDescription")}</p>
+          <div className="space-y-2">
+            {categories.map((category) => (
+              <div
+                key={`order-${category.id}`}
+                data-category-id={category.id}
+                draggable
+                onDragStart={() => setDraggingCategoryId(category.id)}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                }}
+                onDrop={() => handleDropOn(category.id)}
+                onDragEnd={() => setDraggingCategoryId(null)}
+                onTouchStart={() => setTouchDraggingCategoryId(category.id)}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={() => setTouchDraggingCategoryId(null)}
+                className="touch-none cursor-grab rounded-lg border border-surface-700 bg-surface-900/70 px-3 py-2 text-sm text-slate-100 active:cursor-grabbing"
+              >
+                {category.name}
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="space-y-2">

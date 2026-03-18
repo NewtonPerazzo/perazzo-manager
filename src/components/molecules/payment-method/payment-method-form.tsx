@@ -48,7 +48,7 @@ export function PaymentMethodForm({
     <form onSubmit={handleSubmit(submit)} className="grid gap-3">
       <Field label={t("paymentMethods.name")}>
         <Input {...register("name")} required />
-        {errors.name ? <p className="text-xs text-red-300">{t("common.invalidField")}</p> : null}
+        {errors.name ? <p className="text-xs text-red-300">{errors.name.message ?? t("common.invalidField")}</p> : null}
       </Field>
       <Button type="submit" disabled={isSubmitting}>
         {isSubmitting ? t("common.loading") : submitLabel ?? t("common.create")}

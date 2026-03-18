@@ -59,7 +59,7 @@ export function CustomerForm({
     <form onSubmit={handleSubmit(submit)} className="grid gap-3">
       <Field label={t("customers.name")}>
         <Input {...register("name")} required />
-        {errors.name ? <p className="text-xs text-red-300">{t("common.invalidField")}</p> : null}
+        {errors.name ? <p className="text-xs text-red-300">{errors.name.message ?? t("common.invalidField")}</p> : null}
       </Field>
       <Field label={t("customers.phone")}>
         <Controller
@@ -67,7 +67,7 @@ export function CustomerForm({
           name="phone"
           render={({ field }) => <PhoneWhatsappInput value={field.value} onChange={field.onChange} />}
         />
-        {errors.phone ? <p className="text-xs text-red-300">{t("common.invalidField")}</p> : null}
+        {errors.phone ? <p className="text-xs text-red-300">{errors.phone.message ?? t("common.invalidField")}</p> : null}
       </Field>
       <Field label={t("customers.address")}>
         <Input {...register("address")} />
@@ -77,7 +77,7 @@ export function CustomerForm({
       </Field>
       <Field label={t("customers.email")}>
         <Input type="email" {...register("email")} />
-        {errors.email ? <p className="text-xs text-red-300">{t("common.invalidField")}</p> : null}
+        {errors.email ? <p className="text-xs text-red-300">{errors.email.message ?? t("common.invalidField")}</p> : null}
       </Field>
       <Button type="submit" disabled={isSubmitting}>
         {isSubmitting ? t("common.loading") : submitLabel ?? t("common.create")}

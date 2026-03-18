@@ -66,9 +66,15 @@ export function ProductsTemplate({
         skip: (page - 1) * PAGE_SIZE,
         limit: PAGE_SIZE,
         search: searchTerm,
-        categoryId: selectedCategoryId
+        categoryId: selectedCategoryId,
+        sortBy: "created_at",
+        sortOrder: "desc"
       });
-      setProducts(response.items);
+      setProducts(
+        [...response.items].sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+      );
       setTotalProducts(response.total);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("common.unexpectedError"));

@@ -212,7 +212,7 @@ export function OrderForm({
             </Button>
           </div>
         </div>
-        {errors.products ? <p className="text-xs text-red-300">{t("common.invalidField")}</p> : null}
+        {errors.products ? <p className="text-xs text-red-300">{errors.products.message ?? t("common.invalidField")}</p> : null}
         {products.length === 0 ? <p className="text-xs text-slate-400">{t("orders.noProductsAvailable")}</p> : null}
       </Field>
 
@@ -278,7 +278,7 @@ export function OrderForm({
       {isToDeliver ? (
         <Field label={t("orders.streetAddress")} required>
           <Input {...register("customer_address")} />
-          {errors.customer_address ? <p className="text-xs text-red-300">{t("common.invalidField")}</p> : null}
+          {errors.customer_address ? <p className="text-xs text-red-300">{errors.customer_address.message ?? t("common.invalidField")}</p> : null}
         </Field>
       ) : null}
 
@@ -295,7 +295,7 @@ export function OrderForm({
               </option>
             ))}
           </select>
-          {errors.delivery_method_id ? <p className="text-xs text-red-300">{t("common.invalidField")}</p> : null}
+          {errors.delivery_method_id ? <p className="text-xs text-red-300">{errors.delivery_method_id.message ?? t("common.invalidField")}</p> : null}
         </Field>
       ) : null}
 
@@ -311,7 +311,7 @@ export function OrderForm({
             </option>
           ))}
         </select>
-        {errors.payment_method ? <p className="text-xs text-red-300">{t("common.invalidField")}</p> : null}
+        {errors.payment_method ? <p className="text-xs text-red-300">{errors.payment_method.message ?? t("common.invalidField")}</p> : null}
       </Field>
 
       <label className="flex items-center gap-2 text-sm text-slate-200">

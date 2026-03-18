@@ -128,6 +128,9 @@ export function HomeTemplate({ initialStore }: { initialStore: StoreResponse | n
                 </div>
               </div>
             ) : null}
+            <p className="text-xs text-slate-400">
+              {`${t("store.acceptSendOrderToWhatsapp")}: ${store.is_accepted_send_order_to_whatsapp ? "ON" : "OFF"}`}
+            </p>
           </div>
         ) : (
           <p className="text-sm text-slate-300">{t("common.empty")}</p>
