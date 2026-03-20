@@ -62,7 +62,12 @@ export function CatalogHomeTemplate({
 
         <div className="space-y-6">
           {data.sections.map((section) => (
-            <CatalogCategoryProductsSection key={section.category.id} storeSlug={storeSlug} section={section} />
+            <CatalogCategoryProductsSection
+              key={section.category.id}
+              storeSlug={storeSlug}
+              section={section}
+              isStoreOpen={data.store.is_open_now}
+            />
           ))}
         </div>
       </div>

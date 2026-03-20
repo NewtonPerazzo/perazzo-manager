@@ -91,7 +91,13 @@ export function CatalogProductsTemplate({
         {!loading ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {data.products.map((product) => (
-              <CatalogProductCard key={product.id} storeSlug={storeSlug} product={product} className="w-full min-w-0" />
+              <CatalogProductCard
+                key={product.id}
+                storeSlug={storeSlug}
+                product={product}
+                className="w-full min-w-0"
+                isStoreOpen={data.store.is_open_now}
+              />
             ))}
           </div>
         ) : null}

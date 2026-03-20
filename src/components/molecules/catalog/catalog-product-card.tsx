@@ -20,11 +20,13 @@ function formatMoney(value: number): string {
 export function CatalogProductCard({
   storeSlug,
   product,
-  className
+  className,
+  isStoreOpen = true
 }: {
   storeSlug: string;
   product: CatalogProductResponse;
   className?: string;
+  isStoreOpen?: boolean;
 }) {
   const { t } = useI18n();
   const quantity = useCatalogCartStore((state) => state.itemsByProductId[product.id] ?? 0);
@@ -81,6 +83,7 @@ export function CatalogProductCard({
               onInputQuantity={(value) => {
                 void setQuantity(product, value);
               }}
+              disabled={!isStoreOpen}
             />
           ) : (
             <Button
@@ -89,7 +92,7 @@ export function CatalogProductCard({
               onClick={async () => {
                 await increment(product);
               }}
-              disabled={isSyncing}
+              disabled={isSyncing || !isStoreOpen}
               style={{ backgroundColor: "var(--catalog-primary)", color: "#04110c" }}
             >
               {t("catalog.addToCart")}

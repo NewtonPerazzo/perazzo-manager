@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { useI18n } from "@/i18n/provider";
+import { buildBusinessHoursSummary } from "@/lib/store-hours";
 import { cn } from "@/lib/cn";
 import {
   selectCatalogCartProductsTotal,
@@ -27,7 +28,7 @@ export function CatalogHeader({
   store: CatalogStoreResponse;
   storeSlug: string;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const totalItems = useCatalogCartStore((state) => selectCatalogCartTotalItems(state.itemsByProductId));
   const productsTotal = useCatalogCartStore((state) =>
     selectCatalogCartProductsTotal(state.itemsByProductId, state.pricesByProductId)
@@ -39,6 +40,7 @@ export function CatalogHeader({
         ? store.instagram
         : `@${store.instagram}`
     : "";
+  const businessHoursSummary = buildBusinessHoursSummary(store.business_hours, locale);
 
   return (
     <header className="sticky top-0 z-40 border-b border-surface-700 bg-black/80 backdrop-blur">
@@ -88,6 +90,17 @@ export function CatalogHeader({
           <Link href={`/catalog/${storeSlug}`}>
             <h1 className="text-xl font-bold text-white">{store.name}</h1>
           </Link>
+          <div className="text-center">
+            {businessHoursSummary ? (
+              <p className="text-sm text-slate-300">{businessHoursSummary}</p>
+            ) : null}
+            <p className="inline-flex items-center gap-2 text-sm">
+              <span
+                className={`h-2.5 w-2.5 rounded-full ${store.is_open_now ? "bg-emerald-400" : "bg-red-400"}`}
+              />
+              <span>{store.is_open_now ? t("store.openNow") : t("store.closedNow")}</span>
+            </p>
+          </div>
 
           <div className="flex flex-wrap items-center justify-center gap-2">
             {store.instagram ? (

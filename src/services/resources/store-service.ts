@@ -36,5 +36,16 @@ export const storeService = {
     } catch (error) {
       throw normalizeApiError(error);
     }
+  },
+
+  async toggleTodayOpen(token: string, shouldOpen: boolean): Promise<StoreResponse> {
+    try {
+      const { data } = await createApiClient(token).patch<StoreResponse>("/store/me/today-open", {
+        should_open: shouldOpen
+      });
+      return data;
+    } catch (error) {
+      throw normalizeApiError(error);
+    }
   }
 };

@@ -3,10 +3,12 @@ import type { CatalogHomeSectionResponse } from "@/types/api/catalog";
 
 export function CatalogCategoryProductsSection({
   storeSlug,
-  section
+  section,
+  isStoreOpen = true
 }: {
   storeSlug: string;
   section: CatalogHomeSectionResponse;
+  isStoreOpen?: boolean;
 }) {
   return (
     <section className="space-y-3">
@@ -18,7 +20,7 @@ export function CatalogCategoryProductsSection({
       <div className="-mx-1 overflow-x-auto no-scrollbar px-1 pb-1">
         <div className="flex w-max min-w-full gap-3">
           {section.products.map((product) => (
-            <CatalogProductCard key={product.id} storeSlug={storeSlug} product={product} />
+            <CatalogProductCard key={product.id} storeSlug={storeSlug} product={product} isStoreOpen={isStoreOpen} />
           ))}
         </div>
       </div>

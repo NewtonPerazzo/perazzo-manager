@@ -1,6 +1,6 @@
 "use client";
 
-import { Instagram, MessageCircle } from "lucide-react";
+import { Copy, Instagram, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -11,18 +11,20 @@ import { Card } from "@/components/atoms/card";
 import { Modal } from "@/components/atoms/modal";
 import { ListSkeleton } from "@/components/molecules/common/list-skeleton";
 import { StoreForm } from "@/components/molecules/store/store-form";
+import { Switch } from "@/components/atoms/switch";
 import { useUiFeedback } from "@/hooks/use-ui-feedback";
 import { useI18n } from "@/i18n/provider";
+import { buildBusinessHoursSummary, getTodayKey, normalizeBusinessHours } from "@/lib/store-hours";
 import { storeService } from "@/services/resources/store-service";
 import { useAuthStore } from "@/store/auth-store";
 import { useUiFeedbackStore } from "@/store/ui-feedback-store";
 import type { StoreCreatePayload, StoreResponse } from "@/types/api/store";
 
 export function HomeTemplate({ initialStore }: { initialStore: StoreResponse | null }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const token = useAuthStore((state) => state.token);
-  const { runWithFeedback } = useUiFeedback();
+  const { runWithFeedback, toast } = useUiFeedback();
   const isSubmitting = useUiFeedbackStore((state) => Boolean(state.loadingByKey["store:submit"]));
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -74,6 +76,52 @@ export function HomeTemplate({ initialStore }: { initialStore: StoreResponse | n
     router.refresh();
   }
 
+  function getCatalogUrl(slug?: string): string {
+    if (!slug) return "";
+    const envBase =
+      process.env.NEXT_PUBLIC_CATALOG_BASE_URL ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      (typeof window !== "undefined" ? window.location.origin : "");
+    return `${envBase.replace(/\/$/, "")}/catalog/${slug}`;
+  }
+
+  async function copyCatalogUrl(url: string) {
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast(t("home.catalogLinkCopied"), "success");
+    } catch {
+      toast(t("common.unexpectedError"), "error");
+    }
+  }
+
+  async function toggleTodayStoreOpen(nextOpen: boolean) {
+    if (!token || !store) return;
+    const result = await runWithFeedback(
+      "store:submit",
+      async () => {
+        const hours = normalizeBusinessHours(store.business_hours);
+        const today = getTodayKey();
+        const day = hours[today];
+        const payloadHours = {
+          ...hours,
+          [today]: {
+            ...day,
+            enabled: nextOpen
+          }
+        };
+        const updated = await storeService.updateStorePartial(token, { business_hours: payloadHours });
+        setStore(updated);
+      },
+      {
+        successMessage: nextOpen ? t("store.openedSuccess") : t("store.closedSuccess")
+      }
+    );
+
+    if (!result.ok) return;
+    router.refresh();
+  }
+
   return (
     <>
       <Card>
@@ -104,6 +152,34 @@ export function HomeTemplate({ initialStore }: { initialStore: StoreResponse | n
               ) : null}
               <p className="text-base font-semibold">{store.name}</p>
               {store.description && <p>{store.description}</p>}
+              {store.has_catalog_active && store.slug ? (
+                <div className="flex w-full flex-col items-start gap-2 rounded-lg border border-surface-700 px-3 py-2">
+                  <a
+                    href={getCatalogUrl(store.slug)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full break-all text-sm text-accent-300 underline"
+                    title={getCatalogUrl(store.slug)}
+                  >
+                    {getCatalogUrl(store.slug)}
+                  </a>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="self-center px-2 py-1"
+                    onClick={() => void copyCatalogUrl(getCatalogUrl(store.slug))}
+                  >
+                    <span className="inline-flex items-center gap-1 text-xs">
+                      <Copy size={14} />
+                      {t("home.copy")}
+                    </span>
+                  </Button>
+                  <label className="flex w-full items-center justify-center gap-2 text-xs text-slate-200">
+                    <Switch checked={store.is_open_now} onChange={(value) => void toggleTodayStoreOpen(value)} />
+                    {store.is_open_now ? t("store.closeStore") : t("store.openStore")}
+                  </label>
+                </div>
+              ) : null}
             </div>
             {store.email && <p>{store.email}</p>}
             {store.phone && <p>{store.phone}</p>}
@@ -120,6 +196,17 @@ export function HomeTemplate({ initialStore }: { initialStore: StoreResponse | n
                 <MessageCircle size={16} className="text-emerald-400" />
               </p>
             )}
+            {buildBusinessHoursSummary(store.business_hours, locale) ? (
+              <div className="flex flex-col items-center gap-1 text-center">
+                <p className="text-sm text-slate-300">{buildBusinessHoursSummary(store.business_hours, locale)}</p>
+                <p className="inline-flex items-center gap-2 text-sm">
+                  <span
+                    className={`h-2.5 w-2.5 rounded-full ${store.is_open_now ? "bg-emerald-400" : "bg-red-400"}`}
+                  />
+                  <span>{store.is_open_now ? t("store.openNow") : t("store.closedNow")}</span>
+                </p>
+              </div>
+            ) : null}
             {store.color ? (
               <div className="mt-6 rounded-xl border border-surface-700 p-4">
                 <p className="mb-2 text-sm font-medium text-slate-200">Tema:</p>

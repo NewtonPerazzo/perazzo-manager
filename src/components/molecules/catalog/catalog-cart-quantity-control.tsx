@@ -10,13 +10,15 @@ export function CatalogCartQuantityControl({
   onIncrease,
   onDecrease,
   onInputQuantity,
-  hideInput = false
+  hideInput = false,
+  disabled = false
 }: {
   quantity: number;
   onIncrease: () => void;
   onDecrease: () => void;
   onInputQuantity: (value: number) => void;
   hideInput?: boolean;
+  disabled?: boolean;
 }) {
   const [draft, setDraft] = useState(quantity > 0 ? String(quantity) : "");
   const lastSentRef = useRef<number>(quantity);
@@ -42,7 +44,7 @@ export function CatalogCartQuantityControl({
 
   return (
     <div className="flex items-center gap-2 rounded-xl border border-surface-700 bg-surface-900/95 p-2">
-      <Button type="button" variant="ghost" className="h-8 w-8 p-0" onClick={onDecrease}>
+      <Button type="button" variant="ghost" className="h-8 w-8 p-0" onClick={onDecrease} disabled={disabled}>
         -
       </Button>
       {hideInput ? <span className="min-w-5 text-center text-sm font-semibold text-slate-100">{quantity}</span> : (
@@ -65,9 +67,10 @@ export function CatalogCartQuantityControl({
             const value = event.target.value.replace(/\D/g, "");
             setDraft(value);
           }}
+          disabled={disabled}
         />
       )}
-      <Button type="button" variant="ghost" className="h-8 w-8 p-0" onClick={onIncrease}>
+      <Button type="button" variant="ghost" className="h-8 w-8 p-0" onClick={onIncrease} disabled={disabled}>
         +
       </Button>
     </div>

@@ -13,6 +13,7 @@ import { PhoneWhatsappInput } from "@/components/atoms/phone-whatsapp-input";
 import { Switch } from "@/components/atoms/switch";
 import { Textarea } from "@/components/atoms/textarea";
 import { useI18n } from "@/i18n/provider";
+import { normalizeBusinessHours } from "@/lib/store-hours";
 import { storeSchema } from "@/schemas/forms";
 import type { StoreCreatePayload, StoreResponse } from "@/types/api/store";
 
@@ -37,6 +38,16 @@ function isHexColor(value: string): boolean {
 function hasValidWhatsapp(value?: string | null): boolean {
   return (value ?? "").replace(/\D/g, "").length >= 8;
 }
+
+const dayRows = [
+  { key: "monday", labelKey: "store.day.monday" },
+  { key: "tuesday", labelKey: "store.day.tuesday" },
+  { key: "wednesday", labelKey: "store.day.wednesday" },
+  { key: "thursday", labelKey: "store.day.thursday" },
+  { key: "friday", labelKey: "store.day.friday" },
+  { key: "saturday", labelKey: "store.day.saturday" },
+  { key: "sunday", labelKey: "store.day.sunday" }
+] as const;
 
 export function StoreForm({ initialData, onSubmit, submitLabel }: StoreFormProps) {
   const { t } = useI18n();
@@ -64,7 +75,8 @@ export function StoreForm({ initialData, onSubmit, submitLabel }: StoreFormProps
       does_delivery: initialData?.does_delivery ?? false,
       does_pick_up: initialData?.does_pick_up ?? false,
       has_catalog_active: initialData?.has_catalog_active ?? false,
-      is_accepted_send_order_to_whatsapp: initialData?.is_accepted_send_order_to_whatsapp ?? false
+      is_accepted_send_order_to_whatsapp: initialData?.is_accepted_send_order_to_whatsapp ?? false,
+      business_hours: normalizeBusinessHours(initialData?.business_hours)
     }
   });
 
@@ -89,7 +101,8 @@ export function StoreForm({ initialData, onSubmit, submitLabel }: StoreFormProps
       does_delivery: initialData?.does_delivery ?? false,
       does_pick_up: initialData?.does_pick_up ?? false,
       has_catalog_active: initialData?.has_catalog_active ?? false,
-      is_accepted_send_order_to_whatsapp: initialData?.is_accepted_send_order_to_whatsapp ?? false
+      is_accepted_send_order_to_whatsapp: initialData?.is_accepted_send_order_to_whatsapp ?? false,
+      business_hours: normalizeBusinessHours(initialData?.business_hours)
     });
   }, [initialData, reset]);
 
@@ -225,6 +238,36 @@ export function StoreForm({ initialData, onSubmit, submitLabel }: StoreFormProps
       {!canEnableSendToWhatsapp ? (
         <p className="text-xs text-amber-300">{t("store.acceptSendOrderToWhatsappHint")}</p>
       ) : null}
+
+      <div className="space-y-3 rounded-xl border border-surface-700 p-3">
+        <p className="text-sm font-medium text-slate-100">{t("store.businessHours")}</p>
+        {dayRows.map((day) => (
+          <div key={day.key} className="grid gap-2 rounded-lg border border-surface-700 p-2 sm:grid-cols-[1fr,120px,120px]">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm text-slate-200">{t(day.labelKey)}</span>
+              <Controller
+                control={control}
+                name={`business_hours.${day.key}.enabled`}
+                render={({ field }) => (
+                  <Switch checked={Boolean(field.value)} onChange={(value) => field.onChange(value)} />
+                )}
+              />
+            </div>
+            <label className="grid gap-1 text-xs text-slate-300">
+              <span>{t("store.from")}</span>
+              <Input type="time" {...register(`business_hours.${day.key}.start_time`)} />
+            </label>
+            <label className="grid gap-1 text-xs text-slate-300">
+              <span>{t("store.to")}</span>
+              <Input type="time" {...register(`business_hours.${day.key}.end_time`)} />
+            </label>
+          </div>
+        ))}
+        {errors.business_hours ? (
+          <p className="text-xs text-red-300">{errors.business_hours.message ?? t("common.invalidField")}</p>
+        ) : null}
+      </div>
+
       <Button type="submit" disabled={isSubmitting}>
         {isSubmitting ? t("common.loading") : submitLabel ?? t("common.save")}
       </Button>

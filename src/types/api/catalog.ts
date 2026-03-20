@@ -1,4 +1,5 @@
 import type { UUID } from "@/types/api/common";
+import type { StoreBusinessHours } from "@/types/api/store";
 
 export interface CatalogStoreResponse {
   id: UUID;
@@ -13,6 +14,8 @@ export interface CatalogStoreResponse {
   logo?: string | null;
   color?: string | null;
   is_accepted_send_order_to_whatsapp?: boolean;
+  business_hours: StoreBusinessHours;
+  is_open_now: boolean;
 }
 
 export interface CatalogCategoryResponse {

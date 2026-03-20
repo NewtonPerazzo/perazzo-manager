@@ -116,13 +116,14 @@ export function CatalogProductTemplate({
                 onInputQuantity={(value) => {
                   void setQuantity(data.product, value);
                 }}
+                disabled={!data.store.is_open_now}
               />
             ) : (
               <Button
                 type="button"
                 className="w-full"
                 onClick={() => void increment(data.product)}
-                disabled={isSyncing}
+                disabled={isSyncing || !data.store.is_open_now}
                 style={{ backgroundColor: "var(--catalog-primary)", color: "#04110c" }}
               >
                 {t("catalog.addToCart")}

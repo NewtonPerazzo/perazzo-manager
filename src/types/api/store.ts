@@ -1,5 +1,22 @@
 import type { UUID } from "@/types/api/common";
 
+export type BusinessHoursDayKey =
+  | "monday"
+  | "tuesday"
+  | "wednesday"
+  | "thursday"
+  | "friday"
+  | "saturday"
+  | "sunday";
+
+export interface BusinessHoursDay {
+  enabled: boolean;
+  start_time?: string | null;
+  end_time?: string | null;
+}
+
+export type StoreBusinessHours = Record<BusinessHoursDayKey, BusinessHoursDay>;
+
 export interface StoreCreatePayload {
   name: string;
   description?: string | null;
@@ -14,6 +31,7 @@ export interface StoreCreatePayload {
   color?: string | null;
   has_catalog_active?: boolean;
   is_accepted_send_order_to_whatsapp?: boolean;
+  business_hours?: StoreBusinessHours | null;
 }
 
 export interface StoreUpdatePayload {
@@ -30,6 +48,7 @@ export interface StoreUpdatePayload {
   color?: string | null;
   has_catalog_active?: boolean;
   is_accepted_send_order_to_whatsapp?: boolean;
+  business_hours?: StoreBusinessHours | null;
 }
 
 export interface StoreResponse {
@@ -48,4 +67,6 @@ export interface StoreResponse {
   color?: string | null;
   has_catalog_active: boolean;
   is_accepted_send_order_to_whatsapp: boolean;
+  business_hours: StoreBusinessHours;
+  is_open_now: boolean;
 }

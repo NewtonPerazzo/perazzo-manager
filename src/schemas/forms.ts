@@ -130,7 +130,30 @@ export const storeSchema: z.ZodType<StoreCreatePayload> = z.object({
   logo: optionalText,
   color: optionalText.refine((value) => !value || /^#([0-9a-fA-F]{6})$/.test(value)),
   has_catalog_active: z.boolean().optional(),
-  is_accepted_send_order_to_whatsapp: z.boolean().optional()
+  is_accepted_send_order_to_whatsapp: z.boolean().optional(),
+  business_hours: z.object({
+    monday: z.object({ enabled: z.boolean(), start_time: optionalText, end_time: optionalText }),
+    tuesday: z.object({ enabled: z.boolean(), start_time: optionalText, end_time: optionalText }),
+    wednesday: z.object({ enabled: z.boolean(), start_time: optionalText, end_time: optionalText }),
+    thursday: z.object({ enabled: z.boolean(), start_time: optionalText, end_time: optionalText }),
+    friday: z.object({ enabled: z.boolean(), start_time: optionalText, end_time: optionalText }),
+    saturday: z.object({ enabled: z.boolean(), start_time: optionalText, end_time: optionalText }),
+    sunday: z.object({ enabled: z.boolean(), start_time: optionalText, end_time: optionalText })
+  }).optional()
+}).superRefine((value, ctx) => {
+  const hours = value.business_hours;
+  if (!hours) return;
+
+  const entries = Object.entries(hours);
+  for (const [day, item] of entries) {
+    if (item.enabled && (!item.start_time?.trim() || !item.end_time?.trim())) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["business_hours", day],
+        message: "Start and end time are required when day is enabled"
+      });
+    }
+  }
 });
 
 export const productSchema: z.ZodType<ProductCreatePayload> = z.object({

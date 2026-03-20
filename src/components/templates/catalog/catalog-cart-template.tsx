@@ -206,6 +206,7 @@ export function CatalogCartTemplate({ storeSlug }: { storeSlug: string }) {
     return localProductsTotal + deliveryPrice;
   }, [checkoutDraft.isToDeliver, localProductsTotal, selectedDelivery?.price]);
   const displayedTotal = totalItems === 0 ? 0 : (fallbackTotal > 0 ? fallbackTotal : totalPreview);
+  const isStoreOpen = Boolean(catalogData?.store.is_open_now);
 
   useEffect(() => {
     if (checkoutDraft.isToDeliver && selectedDelivery && !checkoutDraft.neighborhood) {
@@ -234,6 +235,10 @@ export function CatalogCartTemplate({ storeSlug }: { storeSlug: string }) {
 
   async function handleFinishOrder() {
     if (!cartId) return;
+    if (!isStoreOpen) {
+      setError(t("catalog.storeClosedAction"));
+      return;
+    }
 
     if (!checkoutDraft.paymentMethodId) {
       setError(t("catalog.validation.paymentMethodRequired"));
@@ -390,6 +395,7 @@ export function CatalogCartTemplate({ storeSlug }: { storeSlug: string }) {
                       onIncrease={() => void setQuantity(item.product, currentAmount + 1)}
                       onDecrease={() => void setQuantity(item.product, currentAmount - 1)}
                       onInputQuantity={(value) => void setQuantity(item.product, value)}
+                      disabled={!isStoreOpen}
                     />
                   </div>
                 </div>
@@ -407,6 +413,7 @@ export function CatalogCartTemplate({ storeSlug }: { storeSlug: string }) {
                 value={checkoutDraft.paymentMethodId}
                 onChange={(event) => updateCheckoutDraft({ paymentMethodId: event.target.value })}
                 className="w-full rounded-xl border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white"
+                disabled={!isStoreOpen}
               >
                 <option value="">{t("orders.selectPaymentMethod")}</option>
                 {paymentMethods.map((method) => (
@@ -427,6 +434,7 @@ export function CatalogCartTemplate({ storeSlug }: { storeSlug: string }) {
                     deliveryMethodId: event.target.checked ? checkoutDraft.deliveryMethodId : ""
                   })
                 }
+                disabled={!isStoreOpen}
               />
               <span>{t("orders.delivery")}</span>
             </label>
@@ -445,6 +453,7 @@ export function CatalogCartTemplate({ storeSlug }: { storeSlug: string }) {
                     });
                   }}
                   className="w-full rounded-xl border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white"
+                  disabled={!isStoreOpen}
                 >
                   <option value="">{t("orders.selectNeighborhood")}</option>
                   {deliveryMethods.map((method) => (
@@ -462,17 +471,26 @@ export function CatalogCartTemplate({ storeSlug }: { storeSlug: string }) {
           <div className="space-y-3 rounded-xl border border-surface-700 bg-surface-900/70 p-4">
             <label className="block space-y-1 text-sm">
               <span>{`${t("auth.firstName")} *`}</span>
-              <Input value={checkoutDraft.firstName} onChange={(event) => updateCheckoutDraft({ firstName: event.target.value })} />
+              <Input
+                value={checkoutDraft.firstName}
+                onChange={(event) => updateCheckoutDraft({ firstName: event.target.value })}
+                disabled={!isStoreOpen}
+              />
             </label>
             <label className="block space-y-1 text-sm">
               <span>{`${t("auth.lastName")} *`}</span>
-              <Input value={checkoutDraft.lastName} onChange={(event) => updateCheckoutDraft({ lastName: event.target.value })} />
+              <Input
+                value={checkoutDraft.lastName}
+                onChange={(event) => updateCheckoutDraft({ lastName: event.target.value })}
+                disabled={!isStoreOpen}
+              />
             </label>
             <label className="block space-y-1 text-sm">
               <span>{`${t("store.whatsapp")} *`}</span>
               <PhoneWhatsappInput
                 value={checkoutDraft.whatsapp}
                 onChange={(value) => updateCheckoutDraft({ whatsapp: value })}
+                disabled={!isStoreOpen}
               />
             </label>
 
@@ -491,6 +509,7 @@ export function CatalogCartTemplate({ storeSlug }: { storeSlug: string }) {
                       });
                     }}
                     className="w-full rounded-xl border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white"
+                    disabled={!isStoreOpen}
                   >
                     <option value="">{t("orders.selectNeighborhood")}</option>
                     {deliveryMethods.map((method) => (
@@ -505,6 +524,7 @@ export function CatalogCartTemplate({ storeSlug }: { storeSlug: string }) {
                   <Input
                     value={checkoutDraft.address}
                     onChange={(event) => updateCheckoutDraft({ address: event.target.value })}
+                    disabled={!isStoreOpen}
                   />
                 </label>
               </>
@@ -516,6 +536,7 @@ export function CatalogCartTemplate({ storeSlug }: { storeSlug: string }) {
                 value={checkoutDraft.observation}
                 onChange={(event) => updateCheckoutDraft({ observation: event.target.value })}
                 placeholder={t("catalog.observation")}
+                disabled={!isStoreOpen}
               />
             </label>
           </div>
@@ -551,6 +572,7 @@ export function CatalogCartTemplate({ storeSlug }: { storeSlug: string }) {
               type="button"
               disabled={
                 isSubmitting ||
+                !isStoreOpen ||
                 totalItems === 0 ||
                 (step === 1 && checkoutDraft.isToDeliver && !checkoutDraft.deliveryMethodId)
               }
