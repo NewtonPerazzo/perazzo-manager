@@ -12,6 +12,8 @@ const items = [
   { href: "/dashboard/categories", key: "nav.categories" },
   { href: "/dashboard/customers", key: "nav.customers" },
   { href: "/dashboard/orders", key: "nav.orders" },
+  { href: "/dashboard/couriers", key: "nav.couriers" },
+  { href: "/dashboard/cash-register", key: "nav.cashRegister" },
   { href: "/dashboard/delivery-methods", key: "nav.deliveryMethods" },
   { href: "/dashboard/payment-methods", key: "nav.paymentMethods" }
 ];

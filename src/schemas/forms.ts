@@ -8,6 +8,7 @@ import type {
 } from "@/types/api/auth";
 import type { CategoryCreatePayload } from "@/types/api/category";
 import type { CustomerCreatePayload } from "@/types/api/customer";
+import type { CourierAdjustmentPayload, CourierPayload } from "@/types/api/courier";
 import type { DeliveryMethodCreatePayload } from "@/types/api/delivery-method";
 import type { OrderCreatePayload } from "@/types/api/order";
 import type { PaymentMethodCreatePayload } from "@/types/api/payment-method";
@@ -57,6 +58,20 @@ export const customerSchema: z.ZodType<CustomerCreatePayload> = z.object({
   email: optionalText.refine((value) => !value || z.string().email().safeParse(value).success)
 });
 
+export const courierSchema: z.ZodType<CourierPayload> = z.object({
+  name: z.string().trim().min(1).max(120),
+  address: optionalText
+});
+
+export const courierAdjustmentSchema: z.ZodType<CourierAdjustmentPayload> = z.object({
+  adjustment_type: z.enum(["add", "remove"]),
+  amount: z.coerce.number().positive(),
+  courier_id: z.string().uuid().optional().or(z.literal("")).nullable(),
+  payment_method: optionalText,
+  note: optionalText,
+  occurred_on: optionalText
+});
+
 export const deliveryMethodSchema: z.ZodType<DeliveryMethodCreatePayload> = z.object({
   name: z.string().trim().min(1).max(120),
   price: z.coerce.number().min(0),
@@ -83,6 +98,7 @@ export const orderFormSchema = z.object({
   customer_email: optionalText.refine((value) => !value || z.string().email().safeParse(value).success),
   payment_method: z.string().trim().min(1).max(60),
   delivery_method_id: z.string().uuid().optional().or(z.literal("")),
+  courier_id: z.string().uuid().optional().or(z.literal("")),
   is_to_deliver: z.boolean().optional()
 }).superRefine((value, ctx) => {
   if (value.is_to_deliver && !value.customer_address?.trim()) {
@@ -161,6 +177,7 @@ export function mapOrderFormToPayload(values: OrderFormValues): OrderCreatePaylo
     },
     payment_method: values.payment_method,
     delivery_method_id: values.delivery_method_id || undefined,
+    courier_id: values.courier_id || undefined,
     is_to_deliver: Boolean(values.is_to_deliver)
   };
 }

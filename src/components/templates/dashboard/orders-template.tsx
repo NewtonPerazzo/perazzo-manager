@@ -14,6 +14,7 @@ import { OrderCard } from "@/components/molecules/order/order-card";
 import { OrderForm } from "@/components/molecules/order/order-form";
 import { useUiFeedback } from "@/hooks/use-ui-feedback";
 import { useI18n } from "@/i18n/provider";
+import { courierService } from "@/services/resources/courier-service";
 import { customerService } from "@/services/resources/customer-service";
 import { deliveryMethodService } from "@/services/resources/delivery-method-service";
 import { orderService } from "@/services/resources/order-service";
@@ -24,6 +25,7 @@ import { useAuthStore } from "@/store/auth-store";
 import { useUiFeedbackStore } from "@/store/ui-feedback-store";
 import type { PaymentMethodResponse } from "@/types/api/payment-method";
 import type { ProductResponse } from "@/types/api/product";
+import type { CourierResponse } from "@/types/api/courier";
 import type { DeliveryMethodResponse } from "@/types/api/delivery-method";
 import type { OrderCreatePayload, OrderResponse, OrderStatus } from "@/types/api/order";
 
@@ -83,6 +85,8 @@ export function OrdersTemplate({
   const [availableDeliveryMethods, setAvailableDeliveryMethods] = useState<DeliveryMethodResponse[]>(
     deliveryMethods
   );
+  const [availableCouriers, setAvailableCouriers] = useState<CourierResponse[]>([]);
+  const [totalCouriers, setTotalCouriers] = useState(0);
   const [pendingWhatsappOrder, setPendingWhatsappOrder] = useState<OrderResponse | null>(null);
   const [phoneModalTarget, setPhoneModalTarget] = useState<"store" | "customer" | null>(null);
   const [isSavingWhatsapp, setIsSavingWhatsapp] = useState(false);
@@ -133,6 +137,21 @@ export function OrdersTemplate({
   }, [storeSlug, storeWhatsapp, token]);
 
   useEffect(() => {
+    async function loadCouriersForListActions() {
+      if (!token) return;
+      try {
+        const couriers = await courierService.list(token, { skip: 0, limit: 200 });
+        setAvailableCouriers(couriers.items);
+        setTotalCouriers(couriers.total);
+      } catch {
+        // Keep orders list available if couriers fails.
+      }
+    }
+
+    void loadCouriersForListActions();
+  }, [token]);
+
+  useEffect(() => {
     async function loadOrderDependencies() {
       if (!token || !open) return;
 
@@ -162,10 +181,20 @@ export function OrdersTemplate({
       } catch {
         // Keep form usable even if delivery methods call fails.
       }
+
+      try {
+        if (availableCouriers.length === 0) {
+          const couriers = await courierService.list(token, { skip: 0, limit: 200 });
+          setAvailableCouriers(couriers.items);
+          setTotalCouriers(couriers.total);
+        }
+      } catch {
+        // Keep form usable even if couriers call fails.
+      }
     }
 
     void loadOrderDependencies();
-  }, [availableDeliveryMethods.length, availablePaymentMethods.length, availableProducts.length, open, token]);
+  }, [availableCouriers.length, availableDeliveryMethods.length, availablePaymentMethods.length, availableProducts.length, open, token]);
 
   async function handleSubmit(payload: OrderCreatePayload) {
     if (!token) return;
@@ -441,6 +470,8 @@ export function OrdersTemplate({
                   order={order}
                   onSendWhatsapp={startSendWhatsapp}
                   onStatusChange={handleStatusChange}
+                  showAssociateCourierButton={totalCouriers > 1}
+                  onAssociateCourier={openEditModal}
                   onEdit={openEditModal}
                   onDelete={setDeletingOrder}
                 />
@@ -470,14 +501,15 @@ export function OrdersTemplate({
         title={editingOrder ? t("common.edit") : t("orders.title")}
       >
         {error ? <p className="mb-2 text-sm text-red-300">{error}</p> : null}
-        <OrderForm
-          onSubmit={handleSubmit}
-          products={availableProducts}
-          paymentMethods={availablePaymentMethods}
-          deliveryMethods={availableDeliveryMethods}
-          initialData={editingOrder}
-          submitLabel={editingOrder ? t("common.save") : t("common.create")}
-        />
+            <OrderForm
+              onSubmit={handleSubmit}
+              products={availableProducts}
+              paymentMethods={availablePaymentMethods}
+              deliveryMethods={availableDeliveryMethods}
+              couriers={availableCouriers}
+              initialData={editingOrder}
+              submitLabel={editingOrder ? t("common.save") : t("common.create")}
+            />
       </Modal>
 
       <WhatsappPhoneModal

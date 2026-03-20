@@ -1,6 +1,7 @@
 import type { UUID } from "@/types/api/common";
 import type { ProductResponse } from "@/types/api/product";
 import type { CustomerResponse } from "@/types/api/customer";
+import type { CourierResponse } from "@/types/api/courier";
 import type { DeliveryMethodResponse } from "@/types/api/delivery-method";
 
 export type OrderStatus =
@@ -27,6 +28,7 @@ export interface OrderCreatePayload {
   };
   is_to_deliver?: boolean;
   delivery_method_id?: UUID | null;
+  courier_id?: UUID | null;
   payment_method: string;
 }
 
@@ -57,6 +59,7 @@ export interface OrderResponse {
   customer: CustomerResponse;
   is_to_deliver: boolean;
   delivery_method?: DeliveryMethodResponse | null;
+  courier?: CourierResponse | null;
   status: OrderStatus;
   payment_method: string;
   observation?: string | null;

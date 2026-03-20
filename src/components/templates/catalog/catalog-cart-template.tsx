@@ -50,6 +50,7 @@ function buildWhatsappMessage(order: OrderResponse, storeSlug: string): string {
   const createdAt = new Date(order.created_at);
   const timeText = createdAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
   const itemsTotal = order.products.reduce((sum, item) => sum + item.price, 0);
+  const deliveryTotal = Math.max(0, order.total_price - itemsTotal);
 
   const lines: string[] = [
     `Novo Pedido (${timeText}): ${order.order_number}`,
@@ -73,6 +74,9 @@ function buildWhatsappMessage(order: OrderResponse, storeSlug: string): string {
     lines.push("------------------------------");
   }
   lines.push(`Itens: R$${itemsTotal.toFixed(2).replace(".", ",")}`);
+  if (order.is_to_deliver) {
+    lines.push(`Entrega: R$${deliveryTotal.toFixed(2).replace(".", ",")}`);
+  }
   lines.push("");
   lines.push(`TOTAL: R$${order.total_price.toFixed(2).replace(".", ",")}`);
   lines.push("------------------------------");

@@ -12,12 +12,16 @@ export function OrderCard({
   order,
   onSendWhatsapp,
   onStatusChange,
+  showAssociateCourierButton,
+  onAssociateCourier,
   onEdit,
   onDelete
 }: {
   order: OrderResponse;
   onSendWhatsapp: (order: OrderResponse) => void;
   onStatusChange: (order: OrderResponse, status: OrderStatus) => Promise<void> | void;
+  showAssociateCourierButton?: boolean;
+  onAssociateCourier?: (order: OrderResponse) => void;
   onEdit: (order: OrderResponse) => void;
   onDelete: (order: OrderResponse) => void;
 }) {
@@ -75,10 +79,23 @@ export function OrderCard({
             ? `${t("orders.delivery")} - ${order.delivery_method?.name ?? t("orders.neighborhoodNotSet")}${order.delivery_method ? ` (R$ ${order.delivery_method.price.toFixed(2)})` : ""}`
             : t("orders.pickup")}
         </p>
+        {order.is_to_deliver && order.courier ? (
+          <p>{`${t("orders.courier")}: ${order.courier.name}`}</p>
+        ) : null}
         <p>{`${t("orders.paymentMethod")}: ${order.payment_method}`}</p>
         <p className="font-semibold text-slate-100">{`${t("orders.total")}: R$ ${order.total_price.toFixed(2)}`}</p>
       </div>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+        {showAssociateCourierButton ? (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => (onAssociateCourier ? onAssociateCourier(order) : onEdit(order))}
+            className="w-full sm:w-auto"
+          >
+            {t("orders.associateCourier")}
+          </Button>
+        ) : null}
         <Button type="button" variant="ghost" onClick={() => onEdit(order)} className="w-full sm:w-auto">
           {t("common.edit")}
         </Button>

@@ -14,6 +14,7 @@ import { useI18n } from "@/i18n/provider";
 import { mapOrderFormToPayload, orderFormSchema } from "@/schemas/forms";
 import { orderService } from "@/services/resources/order-service";
 import { useAuthStore } from "@/store/auth-store";
+import type { CourierResponse } from "@/types/api/courier";
 import type { DeliveryMethodResponse } from "@/types/api/delivery-method";
 import type { PaymentMethodResponse } from "@/types/api/payment-method";
 import type { ProductResponse } from "@/types/api/product";
@@ -42,6 +43,7 @@ export function OrderForm({
   products,
   paymentMethods,
   deliveryMethods,
+  couriers,
   initialData,
   submitLabel
 }: {
@@ -49,6 +51,7 @@ export function OrderForm({
   products: ProductResponse[];
   paymentMethods: PaymentMethodResponse[];
   deliveryMethods: DeliveryMethodResponse[];
+  couriers: CourierResponse[];
   initialData?: OrderResponse | null;
   submitLabel?: string;
 }) {
@@ -82,6 +85,7 @@ export function OrderForm({
       customer_email: initialData?.customer.email ?? "",
       payment_method: initialData?.payment_method ?? "",
       delivery_method_id: initialData?.delivery_method?.id ?? "",
+      courier_id: initialData?.courier?.id ?? "",
       is_to_deliver: initialData?.is_to_deliver ?? false
     }
   });
@@ -92,6 +96,7 @@ export function OrderForm({
   const selectedProducts = useWatch({ control, name: "products" }) ?? [];
   const selectedDeliveryMethodId = useWatch({ control, name: "delivery_method_id" }) ?? "";
   const isToDeliver = Boolean(watch("is_to_deliver"));
+  const shouldShowCourierSelect = isToDeliver;
 
   useEffect(() => {
     reset({
@@ -107,6 +112,7 @@ export function OrderForm({
       customer_email: initialData?.customer.email ?? "",
       payment_method: initialData?.payment_method ?? "",
       delivery_method_id: initialData?.delivery_method?.id ?? "",
+      courier_id: initialData?.courier?.id ?? "",
       is_to_deliver: initialData?.is_to_deliver ?? false
     });
     setSelectedAmount("");
@@ -296,6 +302,22 @@ export function OrderForm({
             ))}
           </select>
           {errors.delivery_method_id ? <p className="text-xs text-red-300">{errors.delivery_method_id.message ?? t("common.invalidField")}</p> : null}
+        </Field>
+      ) : null}
+
+      {shouldShowCourierSelect ? (
+        <Field label={t("couriers.linkToOrderOptional")}>
+          <select
+            {...register("courier_id")}
+            className="w-full rounded-xl border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white outline-none focus:border-accent-500"
+          >
+            <option value="">{t("couriers.unassigned")}</option>
+            {couriers.map((courier) => (
+              <option key={courier.id} value={courier.id}>
+                {courier.name}
+              </option>
+            ))}
+          </select>
         </Field>
       ) : null}
 
