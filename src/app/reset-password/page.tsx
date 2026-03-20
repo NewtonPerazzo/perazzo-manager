@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/atoms/button";
@@ -15,7 +16,7 @@ import { resetPasswordSchema } from "@/schemas/forms";
 import { authService } from "@/services/resources/auth-service";
 import type { ResetPasswordPayload } from "@/types/api/auth";
 
-export default function ResetPasswordPage() {
+function ResetPasswordPageContent() {
   const { t } = useI18n();
   const searchParams = useSearchParams();
   const initialToken = searchParams.get("token") ?? "";
@@ -79,5 +80,13 @@ export default function ResetPasswordPage() {
         </p>
       </Card>
     </main>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={null}>
+      <ResetPasswordPageContent />
+    </Suspense>
   );
 }
