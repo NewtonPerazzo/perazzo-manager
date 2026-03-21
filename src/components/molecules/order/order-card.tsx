@@ -10,7 +10,8 @@ import type { OrderResponse, OrderStatus } from "@/types/api/order";
 
 export function OrderCard({
   order,
-  onSendWhatsapp,
+  onSendToCustomerWhatsapp,
+  onReceiveOnStoreWhatsapp,
   onStatusChange,
   showAssociateCourierButton,
   onAssociateCourier,
@@ -18,7 +19,8 @@ export function OrderCard({
   onDelete
 }: {
   order: OrderResponse;
-  onSendWhatsapp: (order: OrderResponse) => void;
+  onSendToCustomerWhatsapp: (order: OrderResponse) => void;
+  onReceiveOnStoreWhatsapp: (order: OrderResponse) => void;
   onStatusChange: (order: OrderResponse, status: OrderStatus) => Promise<void> | void;
   showAssociateCourierButton?: boolean;
   onAssociateCourier?: (order: OrderResponse) => void;
@@ -102,10 +104,16 @@ export function OrderCard({
         <Button type="button" variant="danger" onClick={() => onDelete(order)} className="w-full sm:w-auto">
           {t("common.delete")}
         </Button>
-        <Button type="button" onClick={() => onSendWhatsapp(order)} className="w-full sm:w-auto">
+        <Button type="button" onClick={() => onSendToCustomerWhatsapp(order)} className="w-full sm:w-auto">
           <span className="inline-flex items-center gap-2">
             <MessageCircle size={16} />
-            {t("orders.sendWhatsapp")}
+            {t("orders.sendToCustomer")}
+          </span>
+        </Button>
+        <Button type="button" onClick={() => onReceiveOnStoreWhatsapp(order)} className="w-full sm:w-auto">
+          <span className="inline-flex items-center gap-2">
+            <MessageCircle size={16} />
+            {t("orders.receiveOnWhatsapp")}
           </span>
         </Button>
       </div>

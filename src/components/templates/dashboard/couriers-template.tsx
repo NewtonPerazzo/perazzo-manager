@@ -14,6 +14,7 @@ import { CourierAdjustmentForm } from "@/components/molecules/courier/courier-ad
 import { CourierForm } from "@/components/molecules/courier/courier-form";
 import { useUiFeedback } from "@/hooks/use-ui-feedback";
 import { useI18n } from "@/i18n/provider";
+import { hasValidWhatsapp, normalizePhone } from "@/lib/phone";
 import { courierService } from "@/services/resources/courier-service";
 import { storeService } from "@/services/resources/store-service";
 import { useAuthStore } from "@/store/auth-store";
@@ -38,14 +39,6 @@ function formatMoney(value: number): string {
 
 function todayDateInput(): string {
   return new Date().toISOString().slice(0, 10);
-}
-
-function normalizePhone(value?: string | null): string {
-  return (value ?? "").replace(/\D/g, "");
-}
-
-function hasValidWhatsapp(value?: string | null): boolean {
-  return normalizePhone(value).length >= 8;
 }
 
 export function CouriersTemplate() {

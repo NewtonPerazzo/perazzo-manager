@@ -171,11 +171,21 @@ export function CustomersTemplate({
           ) : (
             !isLoadingList &&
             customers.map((customer) => (
-              <div key={customer.id} className="rounded-xl border border-surface-700 p-3">
+                <div key={customer.id} className="rounded-xl border border-surface-700 p-3">
                 <div className="flex flex-col items-start justify-between gap-2 sm:flex-row">
                   <div>
-                    <p className="font-medium">{customer.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">{customer.name}</p>
+                      {(customer.orders_count ?? 0) === 1 ? (
+                        <span className="rounded-full border border-emerald-400/50 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
+                          {t("customers.newTag")}
+                        </span>
+                      ) : null}
+                    </div>
                     <p className="text-sm text-slate-300">{customer.phone}</p>
+                    <p className="text-xs text-slate-400">
+                      {`${t("customers.ordersCount")}: ${customer.orders_count ?? 0}`}
+                    </p>
                     {customer.address ? <p className="text-sm text-slate-400">{customer.address}</p> : null}
                     {customer.neighborhood ? (
                       <p className="text-sm text-slate-400">{`${t("customers.neighborhood")}: ${customer.neighborhood}`}</p>

@@ -14,6 +14,8 @@ import { OrderCard } from "@/components/molecules/order/order-card";
 import { OrderForm } from "@/components/molecules/order/order-form";
 import { useUiFeedback } from "@/hooks/use-ui-feedback";
 import { useI18n } from "@/i18n/provider";
+import { buildOrderWhatsappMessage } from "@/lib/order-whatsapp-message";
+import { hasValidWhatsapp, normalizePhone } from "@/lib/phone";
 import { courierService } from "@/services/resources/courier-service";
 import { customerService } from "@/services/resources/customer-service";
 import { deliveryMethodService } from "@/services/resources/delivery-method-service";
@@ -88,6 +90,7 @@ export function OrdersTemplate({
   const [availableCouriers, setAvailableCouriers] = useState<CourierResponse[]>([]);
   const [totalCouriers, setTotalCouriers] = useState(0);
   const [pendingWhatsappOrder, setPendingWhatsappOrder] = useState<OrderResponse | null>(null);
+  const [pendingWhatsappTarget, setPendingWhatsappTarget] = useState<"customer" | "store">("customer");
   const [phoneModalTarget, setPhoneModalTarget] = useState<"store" | "customer" | null>(null);
   const [isSavingWhatsapp, setIsSavingWhatsapp] = useState(false);
   const hasPreviousPage = page > 1;
@@ -286,61 +289,9 @@ export function OrdersTemplate({
     }
   }
 
-  function normalizePhone(value?: string | null): string {
-    return (value ?? "").replace(/\D/g, "");
-  }
-
-  function hasValidWhatsapp(value?: string | null): boolean {
-    return normalizePhone(value).length >= 8;
-  }
-
-  function buildWhatsappMessage(order: OrderResponse): string {
-    const createdAt = new Date(order.created_at);
-    const timeText = createdAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-    const itemsTotal = order.products.reduce((sum, item) => sum + item.price, 0);
-
-    const lines: string[] = [
-      `Novo Pedido (${timeText}): ${order.order_number}`,
-      `Tipo de entrega: ${order.is_to_deliver ? `Delivery${order.delivery_method?.name ? ` - ${order.delivery_method.name}` : ""}` : "Retirada"}`
-    ];
-
-    if (order.customer.name) {
-      lines.push(`Nome: ${order.customer.name}`);
-    }
-    if (order.customer.phone) {
-      lines.push(`Telefone: ${order.customer.phone}`);
-    }
-    if (order.is_to_deliver && order.customer.address) {
-      const neighborhood = order.customer.neighborhood ? ` - Bairro *${order.customer.neighborhood}*` : "";
-      lines.push(`Endereço: ${order.customer.address}${neighborhood}`);
-    }
-
-    lines.push("------------------------------");
-
-    for (const item of order.products) {
-      lines.push(`# ${item.amount}x ${item.product.name} (R$${item.price.toFixed(2).replace(".", ",")})`);
-    }
-
-    lines.push("------------------------------");
-    if (order.observation?.trim()) {
-      lines.push(`Observação: ${order.observation.trim()}`);
-      lines.push("------------------------------");
-    }
-    lines.push(`Itens: R$${itemsTotal.toFixed(2).replace(".", ",")}`);
-    lines.push("");
-    lines.push(`TOTAL: R$${order.total_price.toFixed(2).replace(".", ",")}`);
-    lines.push("------------------------------");
-    const repeatUrl = storeSlug ? `${getCatalogBaseUrl()}/catalog/${storeSlug}` : "";
-    if (repeatUrl) {
-      lines.push("");
-      lines.push(`Para repetir o pedido: ${repeatUrl}`);
-    }
-
-    return lines.join("\n");
-  }
-
   function openWhatsapp(order: OrderResponse, customerPhone: string) {
-    const message = buildWhatsappMessage(order);
+    const repeatUrl = storeSlug ? `${getCatalogBaseUrl()}/catalog/${storeSlug}` : undefined;
+    const message = buildOrderWhatsappMessage(order, { repeatUrl });
     const to = normalizePhone(customerPhone);
     const url = `https://wa.me/${to}?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank", "noopener,noreferrer");
@@ -348,13 +299,15 @@ export function OrdersTemplate({
 
   function resetWhatsappFlow() {
     setPendingWhatsappOrder(null);
+    setPendingWhatsappTarget("customer");
     setPhoneModalTarget(null);
     setIsSavingWhatsapp(false);
   }
 
-  function startSendWhatsapp(order: OrderResponse) {
+  function startSendToCustomerWhatsapp(order: OrderResponse) {
     setError(null);
     setPendingWhatsappOrder(order);
+    setPendingWhatsappTarget("customer");
 
     if (!hasValidWhatsapp(storeWhatsapp)) {
       setPhoneModalTarget("store");
@@ -370,6 +323,20 @@ export function OrdersTemplate({
     resetWhatsappFlow();
   }
 
+  function startReceiveOnStoreWhatsapp(order: OrderResponse) {
+    setError(null);
+    setPendingWhatsappOrder(order);
+    setPendingWhatsappTarget("store");
+
+    if (!hasValidWhatsapp(storeWhatsapp)) {
+      setPhoneModalTarget("store");
+      return;
+    }
+
+    openWhatsapp(order, storeWhatsapp);
+    resetWhatsappFlow();
+  }
+
   async function handleConfirmWhatsapp(phone: string) {
     if (!token || !pendingWhatsappOrder) return;
 
@@ -380,6 +347,12 @@ export function OrdersTemplate({
       if (phoneModalTarget === "store") {
         await storeService.updateStorePartial(token, { whatsapp: normalized });
         setStoreWhatsapp(normalized);
+
+        if (pendingWhatsappTarget === "store") {
+          openWhatsapp(pendingWhatsappOrder, normalized);
+          resetWhatsappFlow();
+          return;
+        }
 
         if (!hasValidWhatsapp(pendingWhatsappOrder.customer.phone)) {
           setPhoneModalTarget("customer");
@@ -468,7 +441,8 @@ export function OrdersTemplate({
               <div key={order.id} className="space-y-4">
                 <OrderCard
                   order={order}
-                  onSendWhatsapp={startSendWhatsapp}
+                  onSendToCustomerWhatsapp={startSendToCustomerWhatsapp}
+                  onReceiveOnStoreWhatsapp={startReceiveOnStoreWhatsapp}
                   onStatusChange={handleStatusChange}
                   showAssociateCourierButton={totalCouriers > 1}
                   onAssociateCourier={openEditModal}

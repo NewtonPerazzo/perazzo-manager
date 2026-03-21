@@ -8,6 +8,7 @@ export interface ProductCreatePayload {
   stock?: number | null;
   image_url?: string | null;
   category_ids?: UUID[];
+  is_active?: boolean;
 }
 
 export interface ProductUpdatePayload {
@@ -17,6 +18,7 @@ export interface ProductUpdatePayload {
   stock?: number | null;
   image_url?: string | null;
   category_ids?: UUID[];
+  is_active?: boolean;
 }
 
 export interface ProductResponse {

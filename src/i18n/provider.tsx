@@ -18,9 +18,15 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocale] = useState<Locale>(defaultLocale);
 
   useEffect(() => {
-    const browserLocale = normalizeLocale(window.navigator.language);
-    setLocale(browserLocale);
+    const savedLocale = window.localStorage.getItem("pm-locale");
+    const nextLocale = normalizeLocale(savedLocale || window.navigator.language);
+    setLocale(nextLocale);
   }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("pm-locale", locale);
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   const value = useMemo<I18nContextValue>(() => {
     const dictionary = dictionaries[locale] ?? dictionaries[defaultLocale];

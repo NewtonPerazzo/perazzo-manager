@@ -23,5 +23,6 @@ export interface CustomerResponse {
   address?: string | null;
   neighborhood?: string | null;
   email?: string | null;
+  orders_count?: number;
   created_at: string;
 }

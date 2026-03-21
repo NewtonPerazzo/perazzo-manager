@@ -4,6 +4,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { useEffect } from "react";
 
 import { CatalogHeader } from "@/components/organisms/catalog/catalog-header";
+import { ToastViewport } from "@/components/molecules/common/toast-viewport";
 import { buildCatalogTheme } from "@/lib/color";
 import { useCatalogCartStore } from "@/store/catalog-cart-store";
 import type { CatalogStoreResponse } from "@/types/api/catalog";
@@ -36,6 +37,7 @@ export function CatalogShell({
     <div className="min-h-screen text-white" style={style}>
       <CatalogHeader store={store} storeSlug={storeSlug} />
       <main className="mx-auto max-w-6xl px-3 py-4">{children}</main>
+      <ToastViewport />
     </div>
   );
 }

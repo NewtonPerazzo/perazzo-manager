@@ -122,6 +122,12 @@ export function HomeTemplate({ initialStore }: { initialStore: StoreResponse | n
     router.refresh();
   }
 
+  const hasConfiguredHours = (() => {
+    if (!store) return false;
+    const hours = normalizeBusinessHours(store.business_hours);
+    return Object.values(hours).some((day) => Boolean(day.start_time && day.end_time));
+  })();
+
   return (
     <>
       <Card>
@@ -175,9 +181,16 @@ export function HomeTemplate({ initialStore }: { initialStore: StoreResponse | n
                     </span>
                   </Button>
                   <label className="flex w-full items-center justify-center gap-2 text-xs text-slate-200">
-                    <Switch checked={store.is_open_now} onChange={(value) => void toggleTodayStoreOpen(value)} />
+                    <Switch
+                      checked={store.is_open_now}
+                      disabled={!hasConfiguredHours}
+                      onChange={(value) => void toggleTodayStoreOpen(value)}
+                    />
                     {store.is_open_now ? t("store.closeStore") : t("store.openStore")}
                   </label>
+                  {!hasConfiguredHours ? (
+                    <p className="text-center text-xs text-amber-300">{t("store.setHoursToToggle")}</p>
+                  ) : null}
                 </div>
               ) : null}
             </div>

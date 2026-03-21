@@ -38,6 +38,7 @@ export function ProductsTemplate({
   const { runWithFeedback } = useUiFeedback();
   const isSubmitting = useUiFeedbackStore((state) => Boolean(state.loadingByKey["products:submit"]));
   const isDeleting = useUiFeedbackStore((state) => Boolean(state.loadingByKey["products:delete"]));
+  const isToggling = useUiFeedbackStore((state) => Boolean(state.loadingByKey["products:toggle-active"]));
 
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -168,6 +169,23 @@ export function ProductsTemplate({
     router.refresh();
   }
 
+  async function handleToggleActive(product: ProductResponse, nextActive: boolean) {
+    if (!token) return;
+
+    const result = await runWithFeedback(
+      "products:toggle-active",
+      async () => {
+        await productService.update(token, product.id, { is_active: nextActive });
+      },
+      {
+        successMessage: t("common.updatedSuccess")
+      }
+    );
+
+    if (!result.ok) return;
+    void loadProducts();
+  }
+
   return (
     <>
       <Card>
@@ -225,6 +243,8 @@ export function ProductsTemplate({
                   product={product}
                   onEdit={() => openEditModal(product)}
                   onDelete={() => setDeletingProduct(product)}
+                  onToggleActive={(next) => void handleToggleActive(product, next)}
+                  isToggling={isToggling}
                 />
               ))
             : null}

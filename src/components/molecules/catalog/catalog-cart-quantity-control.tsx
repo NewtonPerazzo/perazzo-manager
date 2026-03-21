@@ -30,8 +30,9 @@ export function CatalogCartQuantityControl({
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      const parsed = Number.parseInt(draft || "0", 10);
-      const nextValue = Number.isFinite(parsed) ? parsed : 0;
+      const normalizedDraft = draft.trim();
+      const parsed = normalizedDraft === "" ? 0 : Number.parseInt(normalizedDraft, 10);
+      const nextValue = Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
       if (nextValue === quantity || nextValue === lastSentRef.current) {
         return;
       }
@@ -65,7 +66,15 @@ export function CatalogCartQuantityControl({
           value={draft}
           onChange={(event) => {
             const value = event.target.value.replace(/\D/g, "");
-            setDraft(value);
+            if (value === "") {
+              setDraft("");
+              return;
+            }
+            if (value === "0") {
+              setDraft("0");
+              return;
+            }
+            setDraft(String(Number.parseInt(value, 10)));
           }}
           disabled={disabled}
         />

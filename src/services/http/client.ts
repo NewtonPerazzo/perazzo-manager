@@ -1,6 +1,7 @@
 import axios, { AxiosError } from "axios";
 
 import { API_BASE_URL } from "@/services/http/config";
+import { fallbackHttpMessage, translateDetail, translateValidationArray } from "@/services/http/error-translator";
 
 interface ApiValidationItem {
   loc?: Array<string | number>;
@@ -59,32 +60,20 @@ export function normalizeApiError(error: unknown): Error {
 
     if (detail) {
       if (typeof detail === "string") {
-        return new Error(detail);
+        return new Error(translateDetail(detail));
       }
 
       if (Array.isArray(detail)) {
-        const message = detail
-          .map((item) => {
-            const field =
-              item.loc && item.loc.length > 1 ? String(item.loc[item.loc.length - 1]) : "field";
-            return `${field}: ${item.msg ?? "Invalid value"}`;
-          })
-          .join("\n");
-
-        return new Error(message || "Validation error");
+        return new Error(translateValidationArray(detail));
       }
     }
 
-    if (axiosError.response?.status) {
-      return new Error(`HTTP ${axiosError.response.status}`);
-    }
-
-    return new Error(axiosError.message);
+    return new Error(fallbackHttpMessage(axiosError.response?.status));
   }
 
   if (error instanceof Error) {
     return error;
   }
 
-  return new Error("Unknown API error");
+  return new Error(fallbackHttpMessage());
 }

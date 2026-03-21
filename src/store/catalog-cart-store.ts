@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { catalogService } from "@/services/resources/catalog-service";
+import { useUiFeedbackStore } from "@/store/ui-feedback-store";
 import type { CatalogProductResponse } from "@/types/api/catalog";
 
 type CartMap = Record<string, number>;
@@ -56,6 +57,10 @@ function toProductsPayload(itemsByProductId: CartMap) {
       product_id: productId,
       amount
     }));
+}
+
+function isStockWarningMessage(message: string): boolean {
+  return /estoque insuficiente|insufficient stock|stock insuficiente/i.test(message);
 }
 
 export const useCatalogCartStore = create<CatalogCartState>()(
@@ -167,8 +172,13 @@ export const useCatalogCartStore = create<CatalogCartState>()(
           }
 
           set({ cartId: replaced.id, itemsByProductId: nextItemsByProductId, pricesByProductId: nextPricesByProductId, isSyncing: false });
-        } catch {
+        } catch (error) {
           set({ itemsByProductId: current, pricesByProductId: currentPrices, isSyncing: false });
+          const message = error instanceof Error ? error.message : "Unexpected error";
+          useUiFeedbackStore.getState().pushToast({
+            message,
+            variant: isStockWarningMessage(message) ? "warning" : "error"
+          });
         }
       },
       increment: async (product) => {

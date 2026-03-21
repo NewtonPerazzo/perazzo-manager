@@ -13,6 +13,7 @@ import { WhatsappPhoneModal } from "@/components/molecules/common/whatsapp-phone
 import { CashRegisterEntryForm } from "@/components/molecules/cash-register/cash-register-entry-form";
 import { useUiFeedback } from "@/hooks/use-ui-feedback";
 import { useI18n } from "@/i18n/provider";
+import { hasValidWhatsapp, normalizePhone } from "@/lib/phone";
 import { cashRegisterService } from "@/services/resources/cash-register-service";
 import { storeService } from "@/services/resources/store-service";
 import { useAuthStore } from "@/store/auth-store";
@@ -34,14 +35,6 @@ function formatMoney(value: number): string {
 
 function todayDateInput(): string {
   return new Date().toISOString().slice(0, 10);
-}
-
-function normalizePhone(value?: string | null): string {
-  return (value ?? "").replace(/\D/g, "");
-}
-
-function hasValidWhatsapp(value?: string | null): boolean {
-  return normalizePhone(value).length >= 8;
 }
 
 export function CashRegisterTemplate() {
@@ -172,6 +165,7 @@ export function CashRegisterTemplate() {
       `Resumo de caixa (${periodText})`,
       "------------------------------",
       `Pedidos do dia: ${formatMoney(summary.totals.auto_entries)}`,
+      `Total com entrega: ${formatMoney(summary.totals.auto_entries_with_delivery)}`,
       `Entradas: ${formatMoney(summary.totals.manual_entries)}`,
       `Total entradas: ${formatMoney(summary.totals.entries_total)}`,
       `Total saídas: ${formatMoney(summary.totals.expenses_total)}`,
@@ -264,10 +258,16 @@ export function CashRegisterTemplate() {
         {!isLoading && summary ? (
           <div className="space-y-4">
             {isDayView ? (
-              <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-6">
+              <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-7">
                 <div className="rounded-xl border border-surface-700 p-3">
                   <p className="text-xs text-slate-400">{t("cashRegister.autoEntries")}</p>
                   <p className="text-base font-semibold text-white">{formatMoney(summary.totals.auto_entries)}</p>
+                </div>
+                <div className="rounded-xl border border-surface-700 p-3">
+                  <p className="text-xs text-slate-400">{t("cashRegister.totalWithDelivery")}</p>
+                  <p className="text-base font-semibold text-white">
+                    {formatMoney(summary.totals.auto_entries_with_delivery)}
+                  </p>
                 </div>
                 <div className="rounded-xl border border-surface-700 p-3">
                   <p className="text-xs text-slate-400">{t("cashRegister.manualEntries")}</p>

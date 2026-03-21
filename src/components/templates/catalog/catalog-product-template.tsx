@@ -100,12 +100,12 @@ export function CatalogProductTemplate({
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h1 className="text-lg font-semibold text-white">{data.product.name}</h1>
-              {safeDescription ? <p className="mt-1 text-sm text-slate-300">{safeDescription}</p> : null}
             </div>
             <p className="shrink-0 text-base font-semibold" style={{ color: "var(--catalog-primary-soft)" }}>
               {formatMoney(data.product.price)}
             </p>
           </div>
+          {safeDescription ? <p className="text-sm text-slate-300">{safeDescription}</p> : null}
 
           <div className="flex w-full justify-end">
             {quantity > 0 ? (

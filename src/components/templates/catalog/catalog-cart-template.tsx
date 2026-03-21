@@ -11,6 +11,8 @@ import { CatalogShell } from "@/components/organisms/catalog/catalog-shell";
 import { PhoneWhatsappInput } from "@/components/atoms/phone-whatsapp-input";
 import { Textarea } from "@/components/atoms/textarea";
 import { useI18n } from "@/i18n/provider";
+import { buildOrderWhatsappMessage } from "@/lib/order-whatsapp-message";
+import { hasValidWhatsapp, normalizePhone } from "@/lib/phone";
 import { catalogService } from "@/services/resources/catalog-service";
 import {
   selectCatalogCartTotalItems,
@@ -38,59 +40,12 @@ function getCatalogBaseUrl(): string {
   return envBase.replace(/\/$/, "");
 }
 
-function normalizePhone(value?: string | null): string {
-  return (value ?? "").replace(/\D/g, "");
-}
-
-function hasValidWhatsapp(value?: string | null): boolean {
-  return normalizePhone(value).length >= 8;
-}
-
-function buildWhatsappMessage(order: OrderResponse, storeSlug: string): string {
-  const createdAt = new Date(order.created_at);
-  const timeText = createdAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-  const itemsTotal = order.products.reduce((sum, item) => sum + item.price, 0);
-  const deliveryTotal = Math.max(0, order.total_price - itemsTotal);
-
-  const lines: string[] = [
-    `Novo Pedido (${timeText}): ${order.order_number}`,
-    `Tipo de entrega: ${order.is_to_deliver ? `Delivery${order.delivery_method?.name ? ` - ${order.delivery_method.name}` : ""}` : "Retirada"}`
-  ];
-
-  if (order.customer.name) lines.push(`Nome: ${order.customer.name}`);
-  if (order.customer.phone) lines.push(`Telefone: ${order.customer.phone}`);
-  if (order.is_to_deliver && order.customer.address) {
-    const neighborhood = order.customer.neighborhood ? ` - Bairro *${order.customer.neighborhood}*` : "";
-    lines.push(`Endereço: ${order.customer.address}${neighborhood}`);
-  }
-
-  lines.push("------------------------------");
-  for (const item of order.products) {
-    lines.push(`# ${item.amount}x ${item.product.name} (R$${item.price.toFixed(2).replace(".", ",")})`);
-  }
-  lines.push("------------------------------");
-  if (order.observation?.trim()) {
-    lines.push(`Observação: ${order.observation.trim()}`);
-    lines.push("------------------------------");
-  }
-  lines.push(`Itens: R$${itemsTotal.toFixed(2).replace(".", ",")}`);
-  if (order.is_to_deliver) {
-    lines.push(`Entrega: R$${deliveryTotal.toFixed(2).replace(".", ",")}`);
-  }
-  lines.push("");
-  lines.push(`TOTAL: R$${order.total_price.toFixed(2).replace(".", ",")}`);
-  lines.push("------------------------------");
-  const repeatUrl = `${getCatalogBaseUrl()}/catalog/${storeSlug}`;
-  lines.push("");
-  lines.push(`Para repetir o pedido: ${repeatUrl}`);
-
-  return lines.join("\n");
-}
-
 function openOrderWhatsapp(order: OrderResponse, storeSlug: string, storeWhatsapp?: string | null): void {
   const to = normalizePhone(storeWhatsapp);
   if (!to) return;
-  const message = buildWhatsappMessage(order, storeSlug);
+  const message = buildOrderWhatsappMessage(order, {
+    repeatUrl: `${getCatalogBaseUrl()}/catalog/${storeSlug}`
+  });
   const url = `https://wa.me/${to}?text=${encodeURIComponent(message)}`;
   window.open(url, "_blank", "noopener,noreferrer");
 }

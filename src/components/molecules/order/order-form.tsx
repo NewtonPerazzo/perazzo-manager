@@ -10,6 +10,7 @@ import { ImageDisplay } from "@/components/atoms/image-display";
 import { Input } from "@/components/atoms/input";
 import { PhoneWhatsappInput } from "@/components/atoms/phone-whatsapp-input";
 import { Switch } from "@/components/atoms/switch";
+import { useUiFeedback } from "@/hooks/use-ui-feedback";
 import { useI18n } from "@/i18n/provider";
 import { mapOrderFormToPayload, orderFormSchema } from "@/schemas/forms";
 import { orderService } from "@/services/resources/order-service";
@@ -56,6 +57,7 @@ export function OrderForm({
   submitLabel?: string;
 }) {
   const { t } = useI18n();
+  const { toast } = useUiFeedback();
   const token = useAuthStore((state) => state.token);
   const [selectedProductId, setSelectedProductId] = useState("");
   const [selectedAmount, setSelectedAmount] = useState("");
@@ -155,11 +157,19 @@ export function OrderForm({
     if (!selectedProductId) return;
     const parsedAmount = Number(selectedAmount);
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) return;
+    const selectedProduct = productsById.get(selectedProductId);
 
     const existingIndex = selectedProducts.findIndex((item) => item.product_id === selectedProductId);
+    const currentAmount = existingIndex >= 0 ? Number(selectedProducts[existingIndex]?.amount ?? 0) : 0;
+    const nextAmount = currentAmount + parsedAmount;
+
+    if (selectedProduct?.stock !== null && selectedProduct?.stock !== undefined && nextAmount > selectedProduct.stock) {
+      toast(`Estoque insuficiente: apenas ${selectedProduct.stock} unidades`, "warning");
+      return;
+    }
+
     if (existingIndex >= 0) {
-      const current = Number(selectedProducts[existingIndex]?.amount ?? 0);
-      setValue(`products.${existingIndex}.amount`, current + parsedAmount, {
+      setValue(`products.${existingIndex}.amount`, nextAmount, {
         shouldDirty: true,
         shouldValidate: true
       });

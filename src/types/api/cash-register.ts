@@ -39,6 +39,7 @@ export interface CashRegisterEntryResponse {
 export interface CashRegisterOrderAutoEntryResponse {
   name: string;
   amount: number;
+  amount_with_delivery?: number;
   payment_method: string;
 }
 
@@ -61,6 +62,8 @@ export interface CashRegisterSummaryResponse {
   by_payment_method: CashRegisterByPaymentResponse[];
   totals: {
     auto_entries: number;
+    auto_entries_with_delivery: number;
+    delivery_total: number;
     manual_entries: number;
     entries_total: number;
     expenses_total: number;
