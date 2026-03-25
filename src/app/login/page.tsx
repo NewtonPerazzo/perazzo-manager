@@ -17,6 +17,7 @@ import { loginSchema } from "@/schemas/forms";
 import { authService } from "@/services/resources/auth-service";
 import { sessionService } from "@/services/resources/session-service";
 import { useAuthStore } from "@/store/auth-store";
+import { useCatalogCartStore } from "@/store/catalog-cart-store";
 import type { UserLoginPayload } from "@/types/api/auth";
 
 function LoginPageContent() {
@@ -25,6 +26,8 @@ function LoginPageContent() {
   const { t } = useI18n();
   const setToken = useAuthStore((state) => state.setToken);
   const setUser = useAuthStore((state) => state.setUser);
+  const clearToken = useAuthStore((state) => state.clearToken);
+  const resetCatalogSession = useCatalogCartStore((state) => state.resetSession);
   const registered = searchParams.get("registered") === "1";
 
   const {
@@ -42,6 +45,9 @@ function LoginPageContent() {
 
   async function submit(values: UserLoginPayload) {
     try {
+      clearToken();
+      resetCatalogSession();
+      await sessionService.clearToken();
       const auth = await authService.login(values);
       setToken(auth.access_token);
       const me = await authService.getMe(auth.access_token);

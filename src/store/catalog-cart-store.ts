@@ -36,6 +36,7 @@ interface CatalogCartState {
   updateCheckoutDraft: (partial: Partial<CatalogCheckoutDraft>) => void;
   resetCheckoutDraft: () => void;
   clearCart: () => void;
+  resetSession: () => void;
 }
 
 const DEFAULT_CHECKOUT_DRAFT: CatalogCheckoutDraft = {
@@ -98,6 +99,15 @@ export const useCatalogCartStore = create<CatalogCartState>()(
       resetCheckoutDraft: () => set({ checkoutDraft: DEFAULT_CHECKOUT_DRAFT }),
       clearCart: () =>
         set({
+          cartId: null,
+          itemsByProductId: {},
+          pricesByProductId: {},
+          checkoutDraft: DEFAULT_CHECKOUT_DRAFT,
+          isSyncing: false
+        }),
+      resetSession: () =>
+        set({
+          storeSlug: null,
           cartId: null,
           itemsByProductId: {},
           pricesByProductId: {},

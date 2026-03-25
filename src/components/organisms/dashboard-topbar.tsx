@@ -9,6 +9,7 @@ import { useI18n } from "@/i18n/provider";
 import { authService } from "@/services/resources/auth-service";
 import { sessionService } from "@/services/resources/session-service";
 import { useAuthStore } from "@/store/auth-store";
+import { useCatalogCartStore } from "@/store/catalog-cart-store";
 
 export function DashboardTopbar({ onToggleMenu }: { onToggleMenu: () => void }) {
   const router = useRouter();
@@ -17,6 +18,7 @@ export function DashboardTopbar({ onToggleMenu }: { onToggleMenu: () => void }) 
   const userName = useAuthStore((state) => state.userName);
   const setUser = useAuthStore((state) => state.setUser);
   const clearToken = useAuthStore((state) => state.clearToken);
+  const resetCatalogSession = useCatalogCartStore((state) => state.resetSession);
   const [isSessionValid, setIsSessionValid] = useState(false);
 
   useEffect(() => {
@@ -41,6 +43,7 @@ export function DashboardTopbar({ onToggleMenu }: { onToggleMenu: () => void }) 
         const isUnauthorized = error instanceof Error && error.message.includes("401");
         if (isUnauthorized) {
           clearToken();
+          resetCatalogSession();
           await sessionService.clearToken();
         }
       }
@@ -51,10 +54,11 @@ export function DashboardTopbar({ onToggleMenu }: { onToggleMenu: () => void }) 
     return () => {
       active = false;
     };
-  }, [clearToken, setUser, token]);
+  }, [clearToken, resetCatalogSession, setUser, token]);
 
   async function handleLogout() {
     clearToken();
+    resetCatalogSession();
     await sessionService.clearToken();
     router.push("/login");
   }

@@ -20,6 +20,7 @@ async function handleUnauthorizedClientSide() {
   handlingUnauthorized = true;
   try {
     window.localStorage.removeItem("pm-auth-store");
+    window.localStorage.removeItem("pm-catalog-cart-store");
     await fetch("/api/session", { method: "DELETE" });
   } finally {
     window.location.href = "/login";
