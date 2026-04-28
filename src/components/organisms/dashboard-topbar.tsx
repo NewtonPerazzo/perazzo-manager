@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/atoms/button";
+import { UserAvatar } from "@/components/atoms/user-avatar";
 import { useI18n } from "@/i18n/provider";
 import { authService } from "@/services/resources/auth-service";
 import { sessionService } from "@/services/resources/session-service";
@@ -16,6 +17,7 @@ export function DashboardTopbar({ onToggleMenu }: { onToggleMenu: () => void }) 
   const { locale, setLocale, t } = useI18n();
   const token = useAuthStore((state) => state.token);
   const userName = useAuthStore((state) => state.userName);
+  const userPhoto = useAuthStore((state) => state.userPhoto);
   const setUser = useAuthStore((state) => state.setUser);
   const clearToken = useAuthStore((state) => state.clearToken);
   const resetCatalogSession = useCatalogCartStore((state) => state.resetSession);
@@ -34,7 +36,7 @@ export function DashboardTopbar({ onToggleMenu }: { onToggleMenu: () => void }) 
         const me = await authService.getMe(token);
         if (!active) return;
         const fullName = [me.name, me.last_name].filter(Boolean).join(" ").trim();
-        setUser(fullName || me.email, me.email);
+        setUser(fullName || me.email, me.email, me.photo);
         setIsSessionValid(true);
       } catch (error) {
         if (!active) return;
@@ -75,6 +77,9 @@ export function DashboardTopbar({ onToggleMenu }: { onToggleMenu: () => void }) 
           >
             <Menu size={18} />
           </button>
+          {token && isSessionValid ? (
+            <UserAvatar name={userName} photo={userPhoto} size="md" className="hidden md:grid" />
+          ) : null}
           <div>
             <p className="text-xs uppercase tracking-wide text-slate-400">{t("app.name")}</p>
             {token && isSessionValid ? (

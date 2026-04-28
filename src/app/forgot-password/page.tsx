@@ -17,7 +17,7 @@ import type { ForgotPasswordPayload } from "@/types/api/auth";
 
 export default function ForgotPasswordPage() {
   const { t } = useI18n();
-  const [resetToken, setResetToken] = useState<string | null>(null);
+  const [isRequestSuccessful, setIsRequestSuccessful] = useState(false);
 
   const {
     register,
@@ -33,8 +33,8 @@ export default function ForgotPasswordPage() {
 
   async function submit(values: ForgotPasswordPayload) {
     try {
-      const response = await authService.forgotPassword(values);
-      setResetToken(response.reset_token);
+      await authService.forgotPassword(values);
+      setIsRequestSuccessful(true);
     } catch (error) {
       const message = error instanceof Error ? error.message : t("common.unexpectedError");
       setError("root", { message });
@@ -47,37 +47,41 @@ export default function ForgotPasswordPage() {
         <div className="mb-3 flex justify-end">
           <LocaleSelect />
         </div>
-        <h1 className="text-2xl font-semibold text-white">{t("auth.forgotTitle")}</h1>
-        <p className="mb-4 text-sm text-slate-300">{t("auth.forgotSubtitle")}</p>
-        {errors.root ? <p className="mb-3 text-sm text-red-300">{errors.root.message}</p> : null}
-        <form className="grid gap-3" onSubmit={handleSubmit(submit)}>
-          <Field label={t("auth.email")}>
-            <Input type="email" {...register("email")} required />
-            {errors.email ? <p className="text-xs text-red-300">{errors.email.message ?? t("common.invalidField")}</p> : null}
-          </Field>
-          <Button type="submit" isLoading={isSubmitting}>
-            {t("auth.forgotSubmit")}
-          </Button>
-        </form>
-
-        {resetToken ? (
-          <div className="mt-4 rounded-xl border border-surface-700 p-3 text-sm text-slate-200">
-            <p className="mb-2">{t("auth.resetTokenGenerated")}</p>
-            <p className="break-all text-accent-400">{resetToken}</p>
+        {isRequestSuccessful ? (
+          <>
+            <h1 className="text-2xl font-semibold text-white">{t("auth.resetEmailSentTitle")}</h1>
+            <p className="mt-2 text-sm text-slate-300">{t("auth.resetEmailSentSubtitle")}</p>
             <Link
-              className="mt-2 inline-block text-accent-400 hover:underline"
-              href={`/reset-password?token=${encodeURIComponent(resetToken)}`}
+              className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-accent-500 px-4 py-2 text-sm font-semibold text-surface-950 transition hover:bg-accent-400"
+              href="/login"
             >
-              {t("auth.goToReset")}
+              {t("auth.backToLogin")}
             </Link>
-          </div>
-        ) : null}
+          </>
+        ) : (
+          <>
+            <h1 className="text-2xl font-semibold text-white">{t("auth.forgotTitle")}</h1>
+            <p className="mb-4 text-sm text-slate-300">{t("auth.forgotSubtitle")}</p>
+            {errors.root ? <p className="mb-3 text-sm text-red-300">{errors.root.message}</p> : null}
+            <form className="grid gap-3" onSubmit={handleSubmit(submit)}>
+              <Field label={t("auth.email")}>
+                <Input type="email" {...register("email")} required />
+                {errors.email ? (
+                  <p className="text-xs text-red-300">{errors.email.message ?? t("common.invalidField")}</p>
+                ) : null}
+              </Field>
+              <Button type="submit" isLoading={isSubmitting}>
+                {t("auth.forgotSubmit")}
+              </Button>
+            </form>
 
-        <p className="mt-4 text-sm text-slate-300">
-          <Link className="text-accent-400 hover:underline" href="/login">
-            {t("auth.backToLogin")}
-          </Link>
-        </p>
+            <p className="mt-4 text-sm text-slate-300">
+              <Link className="text-accent-400 hover:underline" href="/login">
+                {t("auth.backToLogin")}
+              </Link>
+            </p>
+          </>
+        )}
       </Card>
     </main>
   );

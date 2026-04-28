@@ -115,8 +115,8 @@ npm run typecheck
 
 - `/login`: login page.
 - `/register`: account creation page.
-- `/forgot-password`: password recovery request page.
-- `/reset-password`: password reset page.
+- `/forgot-password`: sends a password reset email through the backend SMTP flow and then shows an email-sent confirmation screen.
+- `/reset-password`: opens from the email link, reads the reset token from the URL without displaying it, lets the user set a new password, and redirects to `/login`.
 - `/dashboard`: store dashboard home.
 - `/dashboard/products`: product management.
 - `/dashboard/categories`: category management.

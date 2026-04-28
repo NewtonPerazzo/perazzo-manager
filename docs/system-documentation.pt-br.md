@@ -29,7 +29,7 @@ A tela de login é `src/app/login/page.tsx`. Ela valida com `loginSchema` de `sr
 
 Depois do login, o token retornado é salvo em `useAuthStore` de `src/store/auth-store.ts`, persistido como `pm-auth-store`. O mesmo token também é enviado para a rota local Next `src/app/api/session/route.ts` por `sessionService.setToken()` em `src/services/resources/session-service.ts`, salvando o cookie `pm_access_token`.
 
-Em seguida a página chama `authService.getMe()`, que envia `PUT /auth/me` para `PUT /api/v1/auth/me`, e salva nome/email do usuário no Zustand.
+Em seguida a página chama `authService.getMe()`, que envia `GET /auth/me` para `GET /api/v1/auth/me`, e salva nome/email/foto do usuário no Zustand.
 
 A proteção do dashboard fica em `src/middleware.ts`. Ele lê o cookie `pm_access_token` usando a constante de `src/lib/session.ts`; requests para `/dashboard/*` sem esse cookie são redirecionados para `/login`.
 
@@ -37,7 +37,9 @@ O client Axios em `src/services/http/client.ts` trata sessões inválidas. Em ca
 
 O cadastro é implementado por `src/app/register/page.tsx`. Ele valida com `registerSchema`, chama `authService.register()` e envia `POST /auth/register` para `POST /api/v1/auth/register`. Em caso de sucesso, redireciona para `/login?registered=1`.
 
-A recuperação de senha usa `authService.forgotPassword()` para `POST /auth/password/forgot` e `authService.resetPassword()` para `POST /auth/password/reset`.
+A recuperação de senha começa em `src/app/forgot-password/page.tsx`. O formulário valida o email com `forgotPasswordSchema` de `src/schemas/forms.ts` e chama `authService.forgotPassword()` em `src/services/resources/auth-service.ts`, que envia `POST /auth/password/forgot` para `POST /api/v1/auth/password/forgot`. O backend envia o email de redefinição por SMTP e retorna apenas uma `message` genérica; o frontend nunca recebe nem exibe o token de reset. Depois de uma requisição bem-sucedida, a página muda para um estado de sucesso informando que o email foi enviado e pedindo para o usuário verificar a caixa de entrada.
+
+O link do email abre `src/app/reset-password/page.tsx` com o token na query string da URL, por exemplo `/reset-password?token=<token>`. A página lê o token com `useSearchParams()`, guarda esse valor em um campo oculto do formulário e exibe apenas o campo de nova senha. Ao enviar, chama `authService.resetPassword()` -> `POST /auth/password/reset` -> `POST /api/v1/auth/password/reset`. Depois que a API confirma a alteração da senha, a página redireciona para `/login`.
 
 ## Fluxo de Dados do Dashboard
 
@@ -222,4 +224,3 @@ O padrão atual é:
 6. Mutations chamam um service, atualizam estado local e geralmente chamam `router.refresh()`.
 
 Páginas públicas do catálogo seguem o mesmo padrão sem token de auth, usando params como `storeSlug` e `productSlug`.
-

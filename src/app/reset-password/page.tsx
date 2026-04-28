@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { useForm } from "react-hook-form";
 
@@ -18,6 +18,7 @@ import type { ResetPasswordPayload } from "@/types/api/auth";
 
 function ResetPasswordPageContent() {
   const { t } = useI18n();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const initialToken = searchParams.get("token") ?? "";
 
@@ -25,7 +26,7 @@ function ResetPasswordPageContent() {
     register,
     handleSubmit,
     setError,
-    formState: { isSubmitting, errors, isSubmitSuccessful }
+    formState: { isSubmitting, errors }
   } = useForm<ResetPasswordPayload>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
@@ -37,6 +38,7 @@ function ResetPasswordPageContent() {
   async function submit(values: ResetPasswordPayload) {
     try {
       await authService.resetPassword(values);
+      router.push("/login");
     } catch (error) {
       const message = error instanceof Error ? error.message : t("common.unexpectedError");
       setError("root", { message });
@@ -53,25 +55,22 @@ function ResetPasswordPageContent() {
         <p className="mb-4 text-sm text-slate-300">{t("auth.resetSubtitle")}</p>
 
         {errors.root ? <p className="mb-3 text-sm text-red-300">{errors.root.message}</p> : null}
-        {isSubmitSuccessful ? (
-          <p className="mb-3 text-sm text-emerald-300">{t("auth.resetSuccess")}</p>
-        ) : null}
-
-        <form className="grid gap-3" onSubmit={handleSubmit(submit)}>
-          <Field label={t("auth.resetToken")}>
-            <Input {...register("token")} required />
-            {errors.token ? <p className="text-xs text-red-300">{errors.token.message ?? t("common.invalidField")}</p> : null}
-          </Field>
-          <Field label={t("auth.newPassword")}>
-            <Input type="password" {...register("new_password")} required />
-            {errors.new_password ? (
-              <p className="text-xs text-red-300">{errors.new_password.message ?? t("common.invalidField")}</p>
-            ) : null}
-          </Field>
-          <Button type="submit" isLoading={isSubmitting}>
-            {t("auth.resetSubmit")}
-          </Button>
-        </form>
+        {initialToken ? (
+          <form className="grid gap-3" onSubmit={handleSubmit(submit)}>
+            <input type="hidden" {...register("token")} />
+            <Field label={t("auth.newPassword")}>
+              <Input type="password" {...register("new_password")} required />
+              {errors.new_password ? (
+                <p className="text-xs text-red-300">{errors.new_password.message ?? t("common.invalidField")}</p>
+              ) : null}
+            </Field>
+            <Button type="submit" isLoading={isSubmitting}>
+              {t("auth.resetSubmit")}
+            </Button>
+          </form>
+        ) : (
+          <p className="text-sm text-red-300">{t("auth.resetLinkInvalid")}</p>
+        )}
 
         <p className="mt-4 text-sm text-slate-300">
           <Link className="text-accent-400 hover:underline" href="/login">

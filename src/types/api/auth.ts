@@ -29,10 +29,6 @@ export interface ForgotPasswordPayload {
   email: string;
 }
 
-export interface ForgotPasswordResponse {
-  reset_token: string;
-}
-
 export interface ResetPasswordPayload {
   token: string;
   new_password: string;

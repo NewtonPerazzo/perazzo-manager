@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { SidebarNav } from "@/components/molecules/navigation/sidebar-nav";
 import { ToastViewport } from "@/components/molecules/common/toast-viewport";
+import { UserAvatar } from "@/components/atoms/user-avatar";
 import { useI18n } from "@/i18n/provider";
 import { DashboardTopbar } from "@/components/organisms/dashboard-topbar";
 import { useAuthStore } from "@/store/auth-store";
@@ -13,6 +14,7 @@ export function ClientShell({ children }: { children: ReactNode }) {
   const { locale, setLocale, t } = useI18n();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const userName = useAuthStore((state) => state.userName);
+  const userPhoto = useAuthStore((state) => state.userPhoto);
 
   return (
     <div className="min-h-screen bg-surface-950 bg-atmosphere text-white">
@@ -24,7 +26,8 @@ export function ClientShell({ children }: { children: ReactNode }) {
             className="relative h-full w-72 border-r border-surface-700 bg-surface-900 p-4 pt-20 shadow-panel"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="mb-3 flex items-center justify-between">
+            <div className="mb-3 flex items-center gap-2">
+              {userName && <UserAvatar name={userName} photo={userPhoto} size="sm" />}
               {userName && <p className="text-sm font-semibold text-slate-100">{userName}</p>}
             </div>
             <SidebarNav onNavigate={() => setMobileMenuOpen(false)} />

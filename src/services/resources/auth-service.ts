@@ -2,7 +2,6 @@ import { createApiClient, normalizeApiError } from "@/services/http/client";
 import type {
   AuthTokenResponse,
   ForgotPasswordPayload,
-  ForgotPasswordResponse,
   MessageResponse,
   RegisterResponse,
   ResetPasswordPayload,
@@ -39,9 +38,9 @@ export const authService = {
     }
   },
 
-  async forgotPassword(payload: ForgotPasswordPayload): Promise<ForgotPasswordResponse> {
+  async forgotPassword(payload: ForgotPasswordPayload): Promise<MessageResponse> {
     try {
-      const { data } = await createApiClient().post<ForgotPasswordResponse>(
+      const { data } = await createApiClient().post<MessageResponse>(
         "/auth/password/forgot",
         null,
         {
