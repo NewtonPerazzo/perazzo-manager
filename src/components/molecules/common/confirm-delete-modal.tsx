@@ -30,8 +30,8 @@ export function ConfirmDeleteModal({
         <Button variant="ghost" onClick={onClose} disabled={isLoading}>
           {t("common.cancel")}
         </Button>
-        <Button variant="danger" onClick={() => void onConfirm()} disabled={isLoading}>
-          {isLoading ? t("common.loading") : t("common.confirmDelete")}
+        <Button variant="danger" onClick={() => void onConfirm()} isLoading={isLoading}>
+          {t("common.confirmDelete")}
         </Button>
       </div>
     </Modal>

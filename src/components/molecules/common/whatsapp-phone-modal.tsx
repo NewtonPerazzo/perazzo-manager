@@ -45,8 +45,9 @@ export function WhatsappPhoneModal({
         <Button
           onClick={() => void onConfirm(phone)}
           disabled={isLoading || phone.trim().length < 8}
+          isLoading={isLoading}
         >
-          {isLoading ? t("common.loading") : t("common.save")}
+          {t("common.save")}
         </Button>
       </div>
     </Modal>

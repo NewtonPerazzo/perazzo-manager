@@ -55,8 +55,8 @@ export default function ForgotPasswordPage() {
             <Input type="email" {...register("email")} required />
             {errors.email ? <p className="text-xs text-red-300">{errors.email.message ?? t("common.invalidField")}</p> : null}
           </Field>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? t("common.loading") : t("auth.forgotSubmit")}
+          <Button type="submit" isLoading={isSubmitting}>
+            {t("auth.forgotSubmit")}
           </Button>
         </form>
 

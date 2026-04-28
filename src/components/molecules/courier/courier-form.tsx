@@ -55,8 +55,8 @@ export function CourierForm({
       <Field label={t("couriers.addressOptional")}>
         <Input {...register("address")} />
       </Field>
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? t("common.loading") : submitLabel ?? t("common.create")}
+      <Button type="submit" isLoading={isSubmitting}>
+        {submitLabel ?? t("common.create")}
       </Button>
     </form>
   );

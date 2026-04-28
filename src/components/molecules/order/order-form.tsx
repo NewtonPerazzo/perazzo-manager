@@ -95,7 +95,8 @@ export function OrderForm({
     control,
     name: "products"
   });
-  const selectedProducts = useWatch({ control, name: "products" }) ?? [];
+  const watchedProducts = useWatch({ control, name: "products" });
+  const selectedProducts = useMemo(() => watchedProducts ?? [], [watchedProducts]);
   const selectedDeliveryMethodId = useWatch({ control, name: "delivery_method_id" }) ?? "";
   const isToDeliver = Boolean(watch("is_to_deliver"));
   const shouldShowCourierSelect = isToDeliver;
@@ -358,10 +359,8 @@ export function OrderForm({
       </label>
 
       <div className="sticky bottom-0 z-10 -mx-4 border-t border-surface-700 bg-surface-900/95 px-4 pt-3 pb-1 backdrop-blur">
-        <Button type="submit" className="w-full" disabled={isSubmitting || isCalculatingTotal}>
-          {isSubmitting || isCalculatingTotal
-            ? t("common.loading")
-            : `${submitLabel ?? t("common.create")} - R$ ${previewTotal.toFixed(2)}`}
+        <Button type="submit" className="w-full" isLoading={isSubmitting || isCalculatingTotal}>
+          {`${submitLabel ?? t("common.create")} - R$ ${previewTotal.toFixed(2)}`}
         </Button>
       </div>
     </form>

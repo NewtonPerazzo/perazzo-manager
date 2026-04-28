@@ -268,8 +268,8 @@ export function StoreForm({ initialData, onSubmit, submitLabel }: StoreFormProps
         ) : null}
       </div>
 
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? t("common.loading") : submitLabel ?? t("common.save")}
+      <Button type="submit" isLoading={isSubmitting}>
+        {submitLabel ?? t("common.save")}
       </Button>
     </form>
   );

@@ -525,6 +525,7 @@ export function CatalogCartTemplate({ storeSlug }: { storeSlug: string }) {
             </div>
             <Button
               type="button"
+              isLoading={isSubmitting}
               disabled={
                 isSubmitting ||
                 !isStoreOpen ||
@@ -550,7 +551,7 @@ export function CatalogCartTemplate({ storeSlug }: { storeSlug: string }) {
               }}
               style={{ backgroundColor: "var(--catalog-primary)", color: "#04110c" }}
             >
-              {step < 2 ? t("common.next") : isSubmitting ? t("common.loading") : t("catalog.send")}
+              {step < 2 ? t("common.next") : t("catalog.send")}
             </Button>
           </div>
         </div>

@@ -100,8 +100,8 @@ export function CourierAdjustmentForm({
       <Field label={t("cashRegister.date")}>
         <Input type="date" {...register("occurred_on")} />
       </Field>
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? t("common.loading") : submitLabel ?? t("common.create")}
+      <Button type="submit" isLoading={isSubmitting}>
+        {submitLabel ?? t("common.create")}
       </Button>
     </form>
   );

@@ -32,7 +32,7 @@ export const authService = {
 
   async getMe(token: string): Promise<UserResponse> {
     try {
-      const { data } = await createApiClient(token).put<UserResponse>("/auth/me", {});
+      const { data } = await createApiClient(token).get<UserResponse>("/auth/me");
       return data;
     } catch (error) {
       throw normalizeApiError(error);

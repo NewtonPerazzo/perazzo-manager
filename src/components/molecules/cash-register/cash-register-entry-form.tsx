@@ -107,8 +107,8 @@ export function CashRegisterEntryForm({
       <Field label={t("cashRegister.note")}>
         <Textarea {...register("note")} />
       </Field>
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? t("common.loading") : submitLabel}
+      <Button type="submit" isLoading={isSubmitting}>
+        {submitLabel}
       </Button>
     </form>
   );

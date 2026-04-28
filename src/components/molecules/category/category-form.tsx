@@ -57,8 +57,8 @@ export function CategoryForm({
       <Field label={t("categories.description")}>
         <Textarea {...register("description")} />
       </Field>
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? t("common.loading") : submitLabel ?? t("common.create")}
+      <Button type="submit" isLoading={isSubmitting}>
+        {submitLabel ?? t("common.create")}
       </Button>
     </form>
   );

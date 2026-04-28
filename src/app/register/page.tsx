@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/atoms/button";
 import { Card } from "@/components/atoms/card";
 import { Field } from "@/components/atoms/field";
+import { ImagePicker } from "@/components/atoms/image-picker";
 import { Input } from "@/components/atoms/input";
 import { LocaleSelect } from "@/components/molecules/common/locale-select";
 import { useI18n } from "@/i18n/provider";
@@ -23,6 +24,8 @@ export default function RegisterPage() {
     register,
     handleSubmit,
     setError,
+    setValue,
+    watch,
     formState: { isSubmitting, errors }
   } = useForm<UserRegisterPayload>({
     resolver: zodResolver(registerSchema),
@@ -35,6 +38,7 @@ export default function RegisterPage() {
       photo: ""
     }
   });
+  const photoValue = watch("photo") ?? "";
 
   async function submit(values: UserRegisterPayload) {
     try {
@@ -85,12 +89,21 @@ export default function RegisterPage() {
             <Field label={t("auth.birthDate")}>
               <Input type="date" {...register("birth_date")} />
             </Field>
-            <Field label={t("auth.photoUrl")}>
-              <Input {...register("photo")} />
+          </div>
+          <div className="grid gap-3">
+            <Field label={t("auth.photo")}>
+              <ImagePicker
+                value={photoValue}
+                alt="user-photo"
+                onChange={(value) => setValue("photo", value, { shouldValidate: true })}
+                selectLabel={t("common.selectImage")}
+                changeLabel={t("common.changeImage")}
+                removeLabel={t("common.removeImage")}
+              />
             </Field>
           </div>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? t("common.loading") : t("auth.registerSubmit")}
+          <Button type="submit" isLoading={isSubmitting}>
+            {t("auth.registerSubmit")}
           </Button>
         </form>
         <p className="mt-4 text-sm text-slate-300">

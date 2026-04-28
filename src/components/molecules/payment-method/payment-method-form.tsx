@@ -50,8 +50,8 @@ export function PaymentMethodForm({
         <Input {...register("name")} required />
         {errors.name ? <p className="text-xs text-red-300">{errors.name.message ?? t("common.invalidField")}</p> : null}
       </Field>
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? t("common.loading") : submitLabel ?? t("common.create")}
+      <Button type="submit" isLoading={isSubmitting}>
+        {submitLabel ?? t("common.create")}
       </Button>
     </form>
   );

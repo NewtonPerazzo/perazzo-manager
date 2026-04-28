@@ -80,8 +80,8 @@ function LoginPageContent() {
             <Input type="password" {...register("password")} required />
             {errors.password ? <p className="text-xs text-red-300">{errors.password.message ?? t("common.invalidField")}</p> : null}
           </Field>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? t("common.loading") : t("auth.submit")}
+          <Button type="submit" isLoading={isSubmitting}>
+            {t("auth.submit")}
           </Button>
         </form>
         <div className="mt-4 flex justify-between text-sm text-slate-300">

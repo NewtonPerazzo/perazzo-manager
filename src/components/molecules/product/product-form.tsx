@@ -131,8 +131,8 @@ export function ProductForm({
         </select>
         {errors.category_id ? <p className="text-xs text-red-300">{errors.category_id.message ?? t("common.invalidField")}</p> : null}
       </Field>
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? t("common.loading") : submitLabel ?? t("common.create")}
+      <Button type="submit" isLoading={isSubmitting}>
+        {submitLabel ?? t("common.create")}
       </Button>
     </form>
   );

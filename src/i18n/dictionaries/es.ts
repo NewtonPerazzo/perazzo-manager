@@ -46,7 +46,7 @@ export const esDictionary: Dictionary = {
   "auth.firstName": "Nombre",
   "auth.lastName": "Apellido",
   "auth.birthDate": "Fecha de nacimiento",
-  "auth.photoUrl": "URL de foto",
+  "auth.photo": "Foto",
   "auth.backToLogin": "Volver al login",
   "auth.forgotTitle": "Olvidé mi contraseña",
   "auth.forgotSubtitle": "Ingresa tu correo para generar un token de reseteo",

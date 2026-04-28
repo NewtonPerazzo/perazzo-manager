@@ -68,8 +68,8 @@ function ResetPasswordPageContent() {
               <p className="text-xs text-red-300">{errors.new_password.message ?? t("common.invalidField")}</p>
             ) : null}
           </Field>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? t("common.loading") : t("auth.resetSubmit")}
+          <Button type="submit" isLoading={isSubmitting}>
+            {t("auth.resetSubmit")}
           </Button>
         </form>
 

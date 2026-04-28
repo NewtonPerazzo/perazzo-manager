@@ -42,7 +42,12 @@ export const forgotPasswordSchema: z.ZodType<ForgotPasswordPayload> = z.object({
 
 export const resetPasswordSchema: z.ZodType<ResetPasswordPayload> = z.object({
   token: z.string().trim().min(1),
-  new_password: z.string().min(6)
+  new_password: z
+    .string()
+    .min(8)
+    .refine((value) => /[A-Z]/.test(value))
+    .refine((value) => /[0-9]/.test(value))
+    .refine((value) => /[!@#$%^&*]/.test(value))
 });
 
 export const categorySchema: z.ZodType<CategoryCreatePayload> = z.object({

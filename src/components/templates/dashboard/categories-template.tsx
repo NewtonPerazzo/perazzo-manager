@@ -207,9 +207,10 @@ export function CategoriesTemplate({ initialData }: { initialData: CategoryRespo
               type="button"
               variant="ghost"
               onClick={() => void handleSaveOrder()}
+              isLoading={isReordering}
               disabled={!isOrderDirty || isReordering || isSubmitting || isDeleting}
             >
-              {isReordering ? t("common.loading") : t("categories.saveOrder")}
+              {t("categories.saveOrder")}
             </Button>
           </div>
           <p className="mb-3 text-xs text-slate-400">{t("categories.reorderDescription")}</p>

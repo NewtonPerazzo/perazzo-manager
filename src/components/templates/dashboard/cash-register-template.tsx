@@ -41,7 +41,6 @@ export function CashRegisterTemplate() {
   const { t } = useI18n();
   const token = useAuthStore((state) => state.token);
   const { runWithFeedback } = useUiFeedback();
-  const isSaving = useUiFeedbackStore((state) => Boolean(state.loadingByKey["cash-register:save"]));
   const isDeleting = useUiFeedbackStore((state) => Boolean(state.loadingByKey["cash-register:delete"]));
 
   const [targetDate, setTargetDate] = useState(todayDateInput());
@@ -410,7 +409,7 @@ export function CashRegisterTemplate() {
           fixedDate={targetDate}
           isProfit={isProfit}
           onSubmit={handleSubmit}
-          submitLabel={isSaving ? t("common.loading") : (editingEntry ? t("common.save") : t("common.create"))}
+          submitLabel={editingEntry ? t("common.save") : t("common.create")}
         />
       </Modal>
 

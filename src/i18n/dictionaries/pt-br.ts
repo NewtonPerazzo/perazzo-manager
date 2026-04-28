@@ -46,7 +46,7 @@ export const ptBrDictionary: Dictionary = {
   "auth.firstName": "Nome",
   "auth.lastName": "Sobrenome",
   "auth.birthDate": "Data de nascimento",
-  "auth.photoUrl": "URL da foto",
+  "auth.photo": "Foto",
   "auth.backToLogin": "Voltar para login",
   "auth.forgotTitle": "Esqueci minha senha",
   "auth.forgotSubtitle": "Informe seu e-mail para gerar um token de reset",

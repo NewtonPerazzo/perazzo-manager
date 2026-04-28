@@ -46,7 +46,7 @@ export const enDictionary: Dictionary = {
   "auth.firstName": "First name",
   "auth.lastName": "Last name",
   "auth.birthDate": "Birth date",
-  "auth.photoUrl": "Photo URL",
+  "auth.photo": "Photo",
   "auth.backToLogin": "Back to login",
   "auth.forgotTitle": "Forgot my password",
   "auth.forgotSubtitle": "Enter your email to generate a reset token",
