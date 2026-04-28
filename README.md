@@ -1,44 +1,146 @@
-# perazzo-manager
+# Perazzo Manager
 
-Frontend da área do cliente do Perazzo, construído com Next.js + React + Zustand + Tailwind.
+Frontend for the Perazzo POS/commerce manager. It provides the store owner dashboard, product and category management, customer management, orders, payment methods, delivery methods, couriers, cash register views, authentication screens, and public catalog pages.
 
-## Stack
+The application is built with Next.js App Router, React, TypeScript, Zustand, Tailwind CSS, and Axios.
 
-- Next.js (App Router)
-- React + TypeScript
-- Zustand (estado client)
-- TailwindCSS
-- i18n local (`pt-br`, `en`, `es`) com `pt-br` padrão
+## Tech Stack
 
-## Estrutura
+- Next.js 15 with App Router
+- React 19
+- TypeScript
+- Tailwind CSS
+- Zustand for client state
+- Axios for API requests
+- React Hook Form
+- Zod and `@hookform/resolvers` for form validation
+- Lucide React for icons
+- react-colorful for color picking
+- ESLint with Next.js configuration
 
-- `src/app`: rotas, layouts e SSR
-- `src/components`: Atomic Design (`atoms`, `molecules`, `organisms`, `templates`)
-- `src/services`: consumo da `perazzo-api`
-- `src/store`: stores Zustand
-- `src/types/api`: tipagens baseadas no backend
-- `src/i18n`: dicionários e provider de tradução
+## Project Structure
 
-## Variáveis
+- `src/app`: Next.js routes, layouts, loading states, and API route handlers.
+- `src/app/(client-area)/dashboard`: authenticated dashboard pages.
+- `src/app/catalog`: public catalog pages.
+- `src/components`: UI components organized with Atomic Design (`atoms`, `molecules`, `organisms`, `templates`).
+- `src/services`: HTTP client and API resource services.
+- `src/store`: Zustand stores.
+- `src/types/api`: TypeScript types that mirror backend API entities.
+- `src/i18n`: local dictionaries and translation provider.
+- `src/lib`: shared helpers for sessions, phone formatting, colors, store hours, and WhatsApp messages.
+- `src/schemas`: form schemas and validation.
 
-Crie `.env.local`:
+## Environment Variables
 
-```bash
-NEXT_PUBLIC_PERAZZO_API_URL=http://localhost:8000/api/v1
+Create a `.env.local` file in the project root.
+
+When the backend is running locally with Docker Compose from `perazzo-api`, use:
+
+```env
+NEXT_PUBLIC_PERAZZO_API_URL=http://localhost:8001/api/v1
 ```
 
-## Rodar
+If this variable is not defined, the app defaults to:
 
-```bash
+- Development fallback: `http://localhost:8001/api/v1`
+- Production: `https://perazzo-api.onrender.com/api/v1`
+
+Using `.env.local` is recommended so the frontend points to the same local API port exposed by Docker.
+
+## Install
+
+Install dependencies:
+
+```powershell
 npm install
+```
+
+The repository also contains a `yarn.lock`, but the current project scripts work directly with npm. Prefer one package manager per install to avoid lockfile drift.
+
+## Run Locally
+
+Start the development server:
+
+```powershell
 npm run dev
 ```
 
-## Rotas da área cliente
+Open:
 
-- `/dashboard` (Home / Store)
-- `/dashboard/products`
-- `/dashboard/categories`
-- `/dashboard/customers`
-- `/dashboard/orders`
-- `/dashboard/payment-methods`
+```text
+http://localhost:3000
+```
+
+Make sure the backend API is running before using dashboard or catalog flows that need data:
+
+```powershell
+cd "C:\Users\Neto Perazzo\Documents\perazzo-api"
+docker compose up --build -d
+```
+
+## Available Scripts
+
+Run the development server:
+
+```powershell
+npm run dev
+```
+
+Create a production build:
+
+```powershell
+npm run build
+```
+
+Start the production server after building:
+
+```powershell
+npm run start
+```
+
+Run lint checks:
+
+```powershell
+npm run lint
+```
+
+Run TypeScript checks:
+
+```powershell
+npm run typecheck
+```
+
+## Main Routes
+
+- `/login`: login page.
+- `/register`: account creation page.
+- `/forgot-password`: password recovery request page.
+- `/reset-password`: password reset page.
+- `/dashboard`: store dashboard home.
+- `/dashboard/products`: product management.
+- `/dashboard/categories`: category management.
+- `/dashboard/customers`: customer management.
+- `/dashboard/orders`: order management.
+- `/dashboard/payment-methods`: payment method management.
+- `/dashboard/delivery-methods`: delivery method management.
+- `/dashboard/couriers`: courier management.
+- `/dashboard/cash-register`: cash register entries and period views.
+- `/catalog`: public catalog entry point.
+- `/catalog/[storeSlug]`: public store catalog.
+
+## Backend Integration
+
+This frontend consumes `perazzo-api`.
+
+For local development with Docker:
+
+- Backend API: `http://localhost:8001`
+- Backend API v1: `http://localhost:8001/api/v1`
+- Frontend: `http://localhost:3000`
+
+Recommended local `.env.local`:
+
+```env
+NEXT_PUBLIC_PERAZZO_API_URL=http://localhost:8001/api/v1
+```
