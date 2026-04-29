@@ -45,7 +45,10 @@ export function CategoriesTemplate({ initialData }: { initialData: CategoryRespo
 
   useEffect(() => {
     async function loadCategories() {
-      if (!token) return;
+      if (!token) {
+        setIsLoadingList(false);
+        return;
+      }
 
       setIsLoadingList(true);
       try {

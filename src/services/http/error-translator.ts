@@ -42,6 +42,16 @@ const bundles: Record<Locale, TranslationBundle> = {
       { test: /^Delivery method is required when delivery is selected$/i, text: "Selecione o bairro para entrega." },
       { test: /^Delivery method not found$/i, text: "Forma de entrega não encontrada." },
       { test: /^Payment method not found$/i, text: "Forma de pagamento não encontrada." },
+      { test: /^Invalid credentials$/i, text: "E-mail ou senha inválidos." },
+      { test: /^Invalid password$/i, text: "Senha inválida." },
+      { test: /^Email already registered$/i, text: "Este e-mail já está cadastrado." },
+      { test: /^Email is already registered$/i, text: "Este e-mail já está cadastrado." },
+      { test: /^Email not verified$/i, text: "Verifique seu e-mail antes de entrar." },
+      { test: /^Inactive user$/i, text: "Usuário inativo." },
+      { test: /^Password must be at least/i, text: "A senha deve ter pelo menos 8 caracteres." },
+      { test: /^Password must contain.*uppercase/i, text: "A senha deve conter ao menos uma letra maiúscula." },
+      { test: /^Password must contain.*number|^Password must contain.*digit/i, text: "A senha deve conter ao menos um número." },
+      { test: /^Password must contain.*special/i, text: "A senha deve conter ao menos um caractere especial." },
       { test: /^Insufficient stock for product:/i, text: "Estoque insuficiente para este produto." },
       { test: /^Product not found:/i, text: "Produto não encontrado." },
       {
@@ -81,6 +91,16 @@ const bundles: Record<Locale, TranslationBundle> = {
       { test: /^Delivery method is required when delivery is selected$/i, text: "Choose a delivery neighborhood." },
       { test: /^Delivery method not found$/i, text: "Delivery method not found." },
       { test: /^Payment method not found$/i, text: "Payment method not found." },
+      { test: /^Invalid credentials$/i, text: "Invalid email or password." },
+      { test: /^Invalid password$/i, text: "Invalid password." },
+      { test: /^Email already registered$/i, text: "This email is already registered." },
+      { test: /^Email is already registered$/i, text: "This email is already registered." },
+      { test: /^Email not verified$/i, text: "Verify your email before signing in." },
+      { test: /^Inactive user$/i, text: "Inactive user." },
+      { test: /^Password must be at least/i, text: "Password must have at least 8 characters." },
+      { test: /^Password must contain.*uppercase/i, text: "Password must contain at least one uppercase letter." },
+      { test: /^Password must contain.*number|^Password must contain.*digit/i, text: "Password must contain at least one number." },
+      { test: /^Password must contain.*special/i, text: "Password must contain at least one special character." },
       { test: /^Insufficient stock for product:/i, text: "Insufficient stock for this product." },
       { test: /^Product not found:/i, text: "Product not found." },
       {
@@ -120,6 +140,16 @@ const bundles: Record<Locale, TranslationBundle> = {
       { test: /^Delivery method is required when delivery is selected$/i, text: "Selecciona el barrio para la entrega." },
       { test: /^Delivery method not found$/i, text: "Forma de entrega no encontrada." },
       { test: /^Payment method not found$/i, text: "Forma de pago no encontrada." },
+      { test: /^Invalid credentials$/i, text: "Correo o contraseña inválidos." },
+      { test: /^Invalid password$/i, text: "Contraseña inválida." },
+      { test: /^Email already registered$/i, text: "Este correo ya está registrado." },
+      { test: /^Email is already registered$/i, text: "Este correo ya está registrado." },
+      { test: /^Email not verified$/i, text: "Verifica tu correo antes de ingresar." },
+      { test: /^Inactive user$/i, text: "Usuario inactivo." },
+      { test: /^Password must be at least/i, text: "La contraseña debe tener al menos 8 caracteres." },
+      { test: /^Password must contain.*uppercase/i, text: "La contraseña debe tener al menos una letra mayúscula." },
+      { test: /^Password must contain.*number|^Password must contain.*digit/i, text: "La contraseña debe tener al menos un número." },
+      { test: /^Password must contain.*special/i, text: "La contraseña debe tener al menos un carácter especial." },
       { test: /^Insufficient stock for product:/i, text: "Stock insuficiente para este producto." },
       { test: /^Product not found:/i, text: "Producto no encontrado." },
       {
@@ -148,6 +178,9 @@ function translateValidationMessage(locale: Locale, raw: string): string {
   if (/valid date|datetime/i.test(msg)) return locale === "en" ? "Enter a valid date." : locale === "es" ? "Ingresa una fecha válida." : "Informe uma data válida.";
   if (/valid email address/i.test(msg)) return locale === "en" ? "Enter a valid email address." : locale === "es" ? "Ingresa un correo válido." : "Informe um e-mail válido.";
   if (/too short/i.test(msg)) return locale === "en" ? "Value is too short." : locale === "es" ? "El valor es muy corto." : "O valor está muito curto.";
+  if (/at least\s*8|8 characters/i.test(msg)) return locale === "en" ? "Use at least 8 characters." : locale === "es" ? "Usa al menos 8 caracteres." : "Use pelo menos 8 caracteres.";
+  if (/number|digit/i.test(msg)) return locale === "en" ? "Use at least one number." : locale === "es" ? "Usa al menos un número." : "Use pelo menos um número.";
+  if (/special|symbol|[!@#$%^&*]/i.test(msg)) return locale === "en" ? "Use at least one special character." : locale === "es" ? "Usa al menos un carácter especial." : "Use pelo menos um caractere especial.";
   if (/uppercase/i.test(msg)) {
     return locale === "en"
       ? "Password must contain at least one uppercase letter."

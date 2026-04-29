@@ -59,7 +59,10 @@ export function CashRegisterTemplate() {
   const isDayView = periodView === "day";
 
   const loadSummary = useCallback(async () => {
-    if (!token) return;
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {

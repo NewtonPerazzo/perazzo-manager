@@ -8,7 +8,12 @@ import "@/app/globals.css";
 
 export const metadata: Metadata = {
   title: "Perazzo Manager",
-  description: "Client area for Perazzo"
+  description: "Client area for Perazzo",
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/icon.png"
+  }
 };
 
 const spaceGrotesk = Space_Grotesk({

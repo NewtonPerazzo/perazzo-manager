@@ -10,15 +10,17 @@ import { Card } from "@/components/atoms/card";
 import { Field } from "@/components/atoms/field";
 import { ImagePicker } from "@/components/atoms/image-picker";
 import { Input } from "@/components/atoms/input";
+import { PasswordInput } from "@/components/atoms/password-input";
 import { LocaleSelect } from "@/components/molecules/common/locale-select";
 import { useI18n } from "@/i18n/provider";
+import { translateFormError } from "@/lib/form-error";
 import { registerSchema } from "@/schemas/forms";
 import { authService } from "@/services/resources/auth-service";
 import type { UserRegisterPayload } from "@/types/api/auth";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
 
   const {
     register,
@@ -79,11 +81,17 @@ export default function RegisterPage() {
           </div>
           <Field label={t("auth.email")} required>
             <Input type="email" {...register("email")} required />
-            {errors.email ? <p className="text-xs text-red-300">{errors.email.message ?? t("common.invalidField")}</p> : null}
+            {errors.email ? <p className="text-xs text-red-300">{translateFormError(locale, errors.email.message, t("common.invalidField"))}</p> : null}
           </Field>
           <Field label={t("auth.password")} required>
-            <Input type="password" {...register("password")} required />
-            {errors.password ? <p className="text-xs text-red-300">{errors.password.message ?? t("common.invalidField")}</p> : null}
+            <PasswordInput
+              {...register("password")}
+              required
+              showLabel={t("auth.showPassword")}
+              hideLabel={t("auth.hidePassword")}
+            />
+            <p className="text-xs leading-5 text-slate-400">{t("auth.passwordHint")}</p>
+            {errors.password ? <p className="text-xs text-red-300">{translateFormError(locale, errors.password.message, t("common.invalidField"))}</p> : null}
           </Field>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label={t("auth.birthDate")}>

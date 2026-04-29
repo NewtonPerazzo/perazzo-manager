@@ -11,8 +11,10 @@ import { Button } from "@/components/atoms/button";
 import { Card } from "@/components/atoms/card";
 import { Field } from "@/components/atoms/field";
 import { Input } from "@/components/atoms/input";
+import { PasswordInput } from "@/components/atoms/password-input";
 import { LocaleSelect } from "@/components/molecules/common/locale-select";
 import { useI18n } from "@/i18n/provider";
+import { translateFormError } from "@/lib/form-error";
 import { loginSchema } from "@/schemas/forms";
 import { authService } from "@/services/resources/auth-service";
 import { sessionService } from "@/services/resources/session-service";
@@ -23,7 +25,7 @@ import type { UserLoginPayload } from "@/types/api/auth";
 function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const setToken = useAuthStore((state) => state.setToken);
   const setUser = useAuthStore((state) => state.setUser);
   const clearToken = useAuthStore((state) => state.clearToken);
@@ -56,8 +58,9 @@ function LoginPageContent() {
       await sessionService.setToken(auth.access_token);
 
       router.push("/dashboard");
-    } catch {
-      setError("root", { message: t("auth.error") });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : t("auth.error");
+      setError("root", { message });
     }
   }
 
@@ -74,11 +77,16 @@ function LoginPageContent() {
         <form className="grid gap-3" onSubmit={handleSubmit(submit)}>
           <Field label={t("auth.email")}>
             <Input type="email" {...register("email")} required />
-            {errors.email ? <p className="text-xs text-red-300">{errors.email.message ?? t("common.invalidField")}</p> : null}
+            {errors.email ? <p className="text-xs text-red-300">{translateFormError(locale, errors.email.message, t("common.invalidField"))}</p> : null}
           </Field>
           <Field label={t("auth.password")}>
-            <Input type="password" {...register("password")} required />
-            {errors.password ? <p className="text-xs text-red-300">{errors.password.message ?? t("common.invalidField")}</p> : null}
+            <PasswordInput
+              {...register("password")}
+              required
+              showLabel={t("auth.showPassword")}
+              hideLabel={t("auth.hidePassword")}
+            />
+            {errors.password ? <p className="text-xs text-red-300">{translateFormError(locale, errors.password.message, t("common.invalidField"))}</p> : null}
           </Field>
           <Button type="submit" isLoading={isSubmitting}>
             {t("auth.submit")}

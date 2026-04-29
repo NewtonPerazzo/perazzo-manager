@@ -36,7 +36,10 @@ export function PaymentMethodsTemplate({
 
   useEffect(() => {
     async function loadPaymentMethods() {
-      if (!token) return;
+      if (!token) {
+        setIsLoadingList(false);
+        return;
+      }
 
       setIsLoadingList(true);
       try {

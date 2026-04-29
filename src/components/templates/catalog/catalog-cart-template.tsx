@@ -524,36 +524,37 @@ export function CatalogCartTemplate({ storeSlug }: { storeSlug: string }) {
                 {`${t("catalog.total")}: ${formatMoney(displayedTotal)}`}
               </p>
             </div>
-            <Button
-              type="button"
-              isLoading={isSubmitting}
-              disabled={
-                isSubmitting ||
-                !isStoreOpen ||
-                totalItems === 0 ||
-                (step === 1 && checkoutDraft.isToDeliver && !checkoutDraft.deliveryMethodId)
-              }
-              onClick={() => {
-                if (step === 0) {
-                  setStep(1);
-                  return;
+            {totalItems > 0 ? (
+              <Button
+                type="button"
+                isLoading={isSubmitting}
+                disabled={
+                  isSubmitting ||
+                  !isStoreOpen ||
+                  (step === 1 && checkoutDraft.isToDeliver && !checkoutDraft.deliveryMethodId)
                 }
-                if (step === 1) {
-                  if (checkoutDraft.isToDeliver && !checkoutDraft.deliveryMethodId) {
-                    setError(t("catalog.validation.deliveryMethodRequired"));
+                onClick={() => {
+                  if (step === 0) {
+                    setStep(1);
                     return;
                   }
-                  setStep(2);
-                  return;
-                }
-                if (step === 2) {
-                  void handleFinishOrder();
-                }
-              }}
-              style={{ backgroundColor: "var(--catalog-primary)", color: "#04110c" }}
-            >
-              {step < 2 ? t("common.next") : t("catalog.send")}
-            </Button>
+                  if (step === 1) {
+                    if (checkoutDraft.isToDeliver && !checkoutDraft.deliveryMethodId) {
+                      setError(t("catalog.validation.deliveryMethodRequired"));
+                      return;
+                    }
+                    setStep(2);
+                    return;
+                  }
+                  if (step === 2) {
+                    void handleFinishOrder();
+                  }
+                }}
+                style={{ backgroundColor: "var(--catalog-primary)", color: "#04110c" }}
+              >
+                {step < 2 ? t("common.next") : t("catalog.send")}
+              </Button>
+            ) : null}
           </div>
         </div>
       ) : null}

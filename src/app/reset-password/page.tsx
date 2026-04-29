@@ -9,15 +9,16 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/atoms/button";
 import { Card } from "@/components/atoms/card";
 import { Field } from "@/components/atoms/field";
-import { Input } from "@/components/atoms/input";
+import { PasswordInput } from "@/components/atoms/password-input";
 import { LocaleSelect } from "@/components/molecules/common/locale-select";
 import { useI18n } from "@/i18n/provider";
+import { translateFormError } from "@/lib/form-error";
 import { resetPasswordSchema } from "@/schemas/forms";
 import { authService } from "@/services/resources/auth-service";
 import type { ResetPasswordPayload } from "@/types/api/auth";
 
 function ResetPasswordPageContent() {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialToken = searchParams.get("token") ?? "";
@@ -59,9 +60,17 @@ function ResetPasswordPageContent() {
           <form className="grid gap-3" onSubmit={handleSubmit(submit)}>
             <input type="hidden" {...register("token")} />
             <Field label={t("auth.newPassword")}>
-              <Input type="password" {...register("new_password")} required />
+              <PasswordInput
+                {...register("new_password")}
+                required
+                showLabel={t("auth.showPassword")}
+                hideLabel={t("auth.hidePassword")}
+              />
+              <p className="text-xs leading-5 text-slate-400">{t("auth.passwordHint")}</p>
               {errors.new_password ? (
-                <p className="text-xs text-red-300">{errors.new_password.message ?? t("common.invalidField")}</p>
+                <p className="text-xs text-red-300">
+                  {translateFormError(locale, errors.new_password.message, t("common.invalidField"))}
+                </p>
               ) : null}
             </Field>
             <Button type="submit" isLoading={isSubmitting}>

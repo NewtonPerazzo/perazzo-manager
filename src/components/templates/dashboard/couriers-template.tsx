@@ -76,7 +76,10 @@ export function CouriersTemplate() {
   const hasNextPage = page * PAGE_SIZE < total;
 
   const loadData = useCallback(async () => {
-    if (!token) return;
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {

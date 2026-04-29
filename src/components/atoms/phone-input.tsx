@@ -97,7 +97,7 @@ export function PhoneInput({
           const nextLocalDigits = localDigits.slice(0, next.maxDigits);
           onChange(buildPhoneValue(next, nextLocalDigits));
         }}
-        className="w-[112px] rounded-xl border border-surface-700 bg-surface-900 px-2 py-2 text-sm text-white outline-none focus:border-accent-500"
+        className="w-[112px] rounded-xl border border-surface-700 bg-surface-900 px-2 py-2 text-base text-white outline-none focus:border-accent-500 md:text-sm"
       >
         {COUNTRY_OPTIONS.map((option) => (
           <option key={option.code} value={option.code}>
@@ -116,7 +116,7 @@ export function PhoneInput({
           const nextDigits = event.target.value.replace(/\D/g, "").slice(0, country.maxDigits);
           onChange(buildPhoneValue(country, nextDigits));
         }}
-        className="w-full rounded-xl border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-white outline-none placeholder:text-slate-400 focus:border-accent-500"
+        className="w-full rounded-xl border border-surface-700 bg-surface-900 px-3 py-2 text-base text-white outline-none placeholder:text-slate-400 focus:border-accent-500 md:text-sm"
       />
     </div>
   );

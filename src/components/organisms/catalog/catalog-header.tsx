@@ -3,6 +3,7 @@
 import { Instagram, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import { useI18n } from "@/i18n/provider";
 import { buildBusinessHoursSummary } from "@/lib/store-hours";
@@ -29,6 +30,7 @@ export function CatalogHeader({
   storeSlug: string;
 }) {
   const { t, locale } = useI18n();
+  const [isCompact, setIsCompact] = useState(false);
   const totalItems = useCatalogCartStore((state) => selectCatalogCartTotalItems(state.itemsByProductId));
   const productsTotal = useCatalogCartStore((state) =>
     selectCatalogCartProductsTotal(state.itemsByProductId, state.pricesByProductId)
@@ -42,35 +44,55 @@ export function CatalogHeader({
     : "";
   const businessHoursSummary = buildBusinessHoursSummary(store.business_hours, locale);
 
+  useEffect(() => {
+    function handleScroll() {
+      setIsCompact(window.scrollY > 72);
+    }
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-40 border-b border-surface-700 bg-black/80 backdrop-blur">
-      <div className="mx-auto max-w-6xl px-3 py-3">
+    <header className="sticky top-0 z-40 border-b border-surface-700 bg-black/85 backdrop-blur transition-all duration-200">
+      <div className={cn("mx-auto max-w-6xl px-3 transition-all duration-200", isCompact ? "py-2" : "py-3")}>
+        {isCompact ? (
+          <div className="flex items-center justify-between gap-3">
+            <Link href={`/catalog/${storeSlug}`} className="min-w-0">
+              {store.logo ? (
+                <Image
+                  src={store.logo}
+                  alt={store.name}
+                  width={44}
+                  height={44}
+                  className="h-11 w-11 rounded-full border border-surface-700 object-cover"
+                  unoptimized
+                />
+              ) : (
+                <span className="grid h-11 w-11 place-items-center rounded-full border border-surface-700 bg-surface-900 text-sm font-semibold">
+                  {store.name.slice(0, 1).toUpperCase()}
+                </span>
+              )}
+            </Link>
+            <CartButton
+              storeSlug={storeSlug}
+              totalItems={totalItems}
+              productsTotal={productsTotal}
+              cartLabel={t("catalog.cart")}
+            />
+          </div>
+        ) : (
+          <>
         <div className="flex items-center justify-end">
           <div className="flex flex-col items-end gap-1">
-            <Link
-              href={`/catalog/${storeSlug}/cart`}
-              onClick={() => {
-                if (typeof window !== "undefined") {
-                  window.dispatchEvent(new CustomEvent("catalog-cart-open"));
-                }
-              }}
-              className={cn(
-                "relative inline-flex h-10 w-10 items-center justify-center rounded-xl border",
-                totalItems > 0 ? "border-transparent text-black" : "border-surface-700 bg-surface-900 text-slate-200"
-              )}
-              style={totalItems > 0 ? { backgroundColor: "var(--catalog-primary)" } : undefined}
-              aria-label={t("catalog.cart")}
-            >
-              <ShoppingCart size={18} />
-              {totalItems > 0 ? (
-                <span className="absolute -right-1 -top-1 rounded-full bg-white px-1.5 py-0.5 text-[10px] font-bold text-black">
-                  {totalItems}
-                </span>
-              ) : null}
-            </Link>
-            {totalItems > 0 ? (
-              <p className="text-[11px] font-medium text-slate-300">{formatMoney(productsTotal)}</p>
-            ) : null}
+            <CartButton
+              storeSlug={storeSlug}
+              totalItems={totalItems}
+              productsTotal={productsTotal}
+              cartLabel={t("catalog.cart")}
+            />
           </div>
         </div>
 
@@ -122,7 +144,50 @@ export function CatalogHeader({
 
           {store.address ? <p className="text-sm text-slate-300">{store.address}</p> : null}
         </div>
+          </>
+        )}
       </div>
     </header>
+  );
+}
+
+function CartButton({
+  cartLabel,
+  productsTotal,
+  storeSlug,
+  totalItems
+}: {
+  cartLabel: string;
+  productsTotal: number;
+  storeSlug: string;
+  totalItems: number;
+}) {
+  return (
+    <div className="flex flex-col items-end gap-1">
+      <Link
+        href={`/catalog/${storeSlug}/cart`}
+        onClick={() => {
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new CustomEvent("catalog-cart-open"));
+          }
+        }}
+        className={cn(
+          "relative inline-flex h-10 w-10 items-center justify-center rounded-xl border",
+          totalItems > 0 ? "border-transparent text-black" : "border-surface-700 bg-surface-900 text-slate-200"
+        )}
+        style={totalItems > 0 ? { backgroundColor: "var(--catalog-primary)" } : undefined}
+        aria-label={cartLabel}
+      >
+        <ShoppingCart size={18} />
+        {totalItems > 0 ? (
+          <span className="absolute -right-1 -top-1 rounded-full bg-white px-1.5 py-0.5 text-[10px] font-bold text-black">
+            {totalItems}
+          </span>
+        ) : null}
+      </Link>
+      {totalItems > 0 ? (
+        <p className="text-[11px] font-medium text-slate-300">{formatMoney(productsTotal)}</p>
+      ) : null}
+    </div>
   );
 }

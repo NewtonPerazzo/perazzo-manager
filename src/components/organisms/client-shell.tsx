@@ -23,25 +23,27 @@ export function ClientShell({ children }: { children: ReactNode }) {
       {mobileMenuOpen ? (
         <div className="fixed inset-0 z-40 bg-black/60 md:hidden" onClick={() => setMobileMenuOpen(false)}>
           <aside
-            className="relative h-full w-72 border-r border-surface-700 bg-surface-900 p-4 pt-20 shadow-panel"
+            className="relative flex h-full w-72 flex-col overflow-y-auto border-r border-surface-700 bg-surface-900 p-4 pb-8 pt-24 shadow-panel"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="mb-3 flex items-center gap-2">
-              {userName && <UserAvatar name={userName} photo={userPhoto} size="sm" />}
-              {userName && <p className="text-sm font-semibold text-slate-100">{userName}</p>}
-            </div>
-            <SidebarNav onNavigate={() => setMobileMenuOpen(false)} />
-            <div className="absolute bottom-4 right-4">
+            <div className="mb-5 flex items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-2">
+                {userName && <UserAvatar name={userName} photo={userPhoto} size="sm" />}
+                {userName && <p className="truncate text-sm font-semibold text-slate-100">{userName}</p>}
+              </div>
               <select
                 value={locale}
                 onChange={(event) => setLocale(event.target.value as typeof locale)}
-                className="rounded-xl border border-surface-700 bg-surface-800 px-2 py-2 text-sm text-white"
+                className="shrink-0 rounded-xl border border-surface-700 bg-surface-800 px-2 py-2 text-sm text-white"
                 aria-label={t("common.locale")}
               >
                 <option value="pt-br">PT-BR</option>
                 <option value="en">EN</option>
                 <option value="es">ES</option>
               </select>
+            </div>
+            <div className="min-h-0 flex-1 pb-6">
+              <SidebarNav onNavigate={() => setMobileMenuOpen(false)} />
             </div>
           </aside>
         </div>

@@ -18,36 +18,36 @@ import type { StoreCreatePayload } from "@/types/api/store";
 const optionalText = z.string().trim().optional().or(z.literal(""));
 
 export const loginSchema: z.ZodType<UserLoginPayload> = z.object({
-  email: z.string().trim().email(),
-  password: z.string().min(6)
+  email: z.string().trim().email("form.email"),
+  password: z.string().min(6, "password.loginMin")
 });
 
 export const registerSchema: z.ZodType<UserRegisterPayload> = z.object({
   name: optionalText,
   last_name: optionalText,
-  email: z.string().trim().email(),
+  email: z.string().trim().email("form.email"),
   password: z
     .string()
-    .min(8)
-    .refine((value) => /[A-Z]/.test(value))
-    .refine((value) => /[0-9]/.test(value))
-    .refine((value) => /[!@#$%^&*]/.test(value)),
+    .min(8, "password.min")
+    .refine((value) => /[A-Z]/.test(value), "password.uppercase")
+    .refine((value) => /[0-9]/.test(value), "password.number")
+    .refine((value) => /[!@#$%^&*]/.test(value), "password.special"),
   birth_date: optionalText,
   photo: optionalText
 });
 
 export const forgotPasswordSchema: z.ZodType<ForgotPasswordPayload> = z.object({
-  email: z.string().trim().email()
+  email: z.string().trim().email("form.email")
 });
 
 export const resetPasswordSchema: z.ZodType<ResetPasswordPayload> = z.object({
   token: z.string().trim().min(1),
   new_password: z
     .string()
-    .min(8)
-    .refine((value) => /[A-Z]/.test(value))
-    .refine((value) => /[0-9]/.test(value))
-    .refine((value) => /[!@#$%^&*]/.test(value))
+    .min(8, "password.min")
+    .refine((value) => /[A-Z]/.test(value), "password.uppercase")
+    .refine((value) => /[0-9]/.test(value), "password.number")
+    .refine((value) => /[!@#$%^&*]/.test(value), "password.special")
 });
 
 export const categorySchema: z.ZodType<CategoryCreatePayload> = z.object({

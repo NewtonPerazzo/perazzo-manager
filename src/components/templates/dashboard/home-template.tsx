@@ -33,7 +33,10 @@ export function HomeTemplate({ initialStore }: { initialStore: StoreResponse | n
 
   useEffect(() => {
     async function loadStore() {
-      if (!token) return;
+      if (!token) {
+        setIsLoadingStore(false);
+        return;
+      }
 
       setIsLoadingStore(true);
       try {
