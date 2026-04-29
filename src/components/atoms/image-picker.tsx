@@ -15,6 +15,9 @@ interface ImagePickerProps {
   removeLabel: string;
 }
 
+const MAX_IMAGE_SIZE_BYTES = 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -37,6 +40,10 @@ export function ImagePicker({
   async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
+    if (!ALLOWED_IMAGE_TYPES.has(file.type) || file.size > MAX_IMAGE_SIZE_BYTES) {
+      event.target.value = "";
+      return;
+    }
 
     const dataUrl = await fileToDataUrl(file);
     onChange(dataUrl);

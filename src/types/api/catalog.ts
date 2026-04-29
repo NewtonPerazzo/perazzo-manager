@@ -67,6 +67,7 @@ export interface CatalogProductOrderResponse {
 
 export interface CatalogCartResponse {
   id: UUID;
+  cart_secret: string;
   products: CatalogProductOrderResponse[];
   customer?: {
     first_name: string;

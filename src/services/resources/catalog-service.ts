@@ -89,6 +89,7 @@ export const catalogService = {
   async replaceCartProducts(
     storeSlug: string,
     cartId: string,
+    cartSecret: string,
     products: CatalogCartProductPayload[]
   ): Promise<CatalogCartResponse | null> {
     try {
@@ -96,6 +97,11 @@ export const catalogService = {
         `/catalog/${storeSlug}/carts/${cartId}/products`,
         {
           products
+        },
+        {
+          params: {
+            cart_secret: cartSecret
+          }
         }
       );
       if (response.status === 204) {
@@ -107,18 +113,26 @@ export const catalogService = {
     }
   },
 
-  async getCart(storeSlug: string, cartId: string): Promise<CatalogCartResponse> {
+  async getCart(storeSlug: string, cartId: string, cartSecret: string): Promise<CatalogCartResponse> {
     try {
-      const { data } = await createApiClient().get<CatalogCartResponse>(`/catalog/${storeSlug}/carts/${cartId}`);
+      const { data } = await createApiClient().get<CatalogCartResponse>(`/catalog/${storeSlug}/carts/${cartId}`, {
+        params: {
+          cart_secret: cartSecret
+        }
+      });
       return data;
     } catch (error) {
       throw normalizeApiError(error);
     }
   },
 
-  async deleteCart(storeSlug: string, cartId: string): Promise<void> {
+  async deleteCart(storeSlug: string, cartId: string, cartSecret: string): Promise<void> {
     try {
-      await createApiClient().delete(`/catalog/${storeSlug}/carts/${cartId}`);
+      await createApiClient().delete(`/catalog/${storeSlug}/carts/${cartId}`, {
+        params: {
+          cart_secret: cartSecret
+        }
+      });
     } catch (error) {
       throw normalizeApiError(error);
     }
@@ -145,12 +159,18 @@ export const catalogService = {
   async previewCartTotal(
     storeSlug: string,
     cartId: string,
+    cartSecret: string,
     payload: CatalogCartPreviewPayload
   ): Promise<number> {
     try {
       const { data } = await createApiClient().post<{ total_price: number }>(
         `/catalog/${storeSlug}/carts/${cartId}/preview-total`,
-        payload
+        payload,
+        {
+          params: {
+            cart_secret: cartSecret
+          }
+        }
       );
       return Number(data.total_price || 0);
     } catch (error) {
@@ -161,12 +181,18 @@ export const catalogService = {
   async checkoutCart(
     storeSlug: string,
     cartId: string,
+    cartSecret: string,
     payload: CatalogCheckoutPayload
   ): Promise<OrderResponse> {
     try {
       const { data } = await createApiClient().post<OrderResponse>(
         `/catalog/${storeSlug}/carts/${cartId}/checkout`,
-        payload
+        payload,
+        {
+          params: {
+            cart_secret: cartSecret
+          }
+        }
       );
       return data;
     } catch (error) {

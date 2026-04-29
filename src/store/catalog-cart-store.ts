@@ -25,6 +25,7 @@ export interface CatalogCheckoutDraft {
 interface CatalogCartState {
   storeSlug: string | null;
   cartId: string | null;
+  cartSecret: string | null;
   itemsByProductId: CartMap;
   pricesByProductId: CartPriceMap;
   checkoutDraft: CatalogCheckoutDraft;
@@ -69,6 +70,7 @@ export const useCatalogCartStore = create<CatalogCartState>()(
     (set, get) => ({
       storeSlug: null,
       cartId: null,
+      cartSecret: null,
       itemsByProductId: {},
       pricesByProductId: {},
       checkoutDraft: DEFAULT_CHECKOUT_DRAFT,
@@ -79,6 +81,7 @@ export const useCatalogCartStore = create<CatalogCartState>()(
           set({
             storeSlug,
             cartId: null,
+            cartSecret: null,
             itemsByProductId: {},
             pricesByProductId: {},
             checkoutDraft: DEFAULT_CHECKOUT_DRAFT,
@@ -100,6 +103,7 @@ export const useCatalogCartStore = create<CatalogCartState>()(
       clearCart: () =>
         set({
           cartId: null,
+          cartSecret: null,
           itemsByProductId: {},
           pricesByProductId: {},
           checkoutDraft: DEFAULT_CHECKOUT_DRAFT,
@@ -109,6 +113,7 @@ export const useCatalogCartStore = create<CatalogCartState>()(
         set({
           storeSlug: null,
           cartId: null,
+          cartSecret: null,
           itemsByProductId: {},
           pricesByProductId: {},
           checkoutDraft: DEFAULT_CHECKOUT_DRAFT,
@@ -134,7 +139,7 @@ export const useCatalogCartStore = create<CatalogCartState>()(
 
         try {
           const payloadProducts = toProductsPayload(nextItemsByProductId);
-          const { cartId, storeSlug } = get();
+          const { cartId, cartSecret, storeSlug } = get();
           if (!storeSlug) {
             set({ itemsByProductId: current, pricesByProductId: currentPrices, isSyncing: false });
             return;
@@ -145,9 +150,10 @@ export const useCatalogCartStore = create<CatalogCartState>()(
             const cart = await catalogService.createCart(storeSlug, { product: first });
 
             if (payloadProducts.length > 1) {
-              const replaced = await catalogService.replaceCartProducts(storeSlug, cart.id, payloadProducts);
+              const replaced = await catalogService.replaceCartProducts(storeSlug, cart.id, cart.cart_secret, payloadProducts);
               set({
                 cartId: replaced?.id ?? cart.id,
+                cartSecret: replaced?.cart_secret ?? cart.cart_secret,
                 itemsByProductId: nextItemsByProductId,
                 pricesByProductId: nextPricesByProductId,
                 isSyncing: false
@@ -155,24 +161,31 @@ export const useCatalogCartStore = create<CatalogCartState>()(
               return;
             }
 
-            set({ cartId: cart.id, itemsByProductId: nextItemsByProductId, pricesByProductId: nextPricesByProductId, isSyncing: false });
+            set({
+              cartId: cart.id,
+              cartSecret: cart.cart_secret,
+              itemsByProductId: nextItemsByProductId,
+              pricesByProductId: nextPricesByProductId,
+              isSyncing: false
+            });
             return;
           }
 
           if (!cartId && payloadProducts.length === 0) {
-            set({ cartId: null, itemsByProductId: {}, pricesByProductId: {}, isSyncing: false });
+            set({ cartId: null, cartSecret: null, itemsByProductId: {}, pricesByProductId: {}, isSyncing: false });
             return;
           }
 
-          if (!cartId) {
+          if (!cartId || !cartSecret) {
             set({ isSyncing: false });
             return;
           }
 
-          const replaced = await catalogService.replaceCartProducts(storeSlug, cartId, payloadProducts);
+          const replaced = await catalogService.replaceCartProducts(storeSlug, cartId, cartSecret, payloadProducts);
           if (!replaced) {
             set({
               cartId: null,
+              cartSecret: null,
               itemsByProductId: {},
               pricesByProductId: {},
               checkoutDraft: DEFAULT_CHECKOUT_DRAFT,
@@ -181,7 +194,13 @@ export const useCatalogCartStore = create<CatalogCartState>()(
             return;
           }
 
-          set({ cartId: replaced.id, itemsByProductId: nextItemsByProductId, pricesByProductId: nextPricesByProductId, isSyncing: false });
+          set({
+            cartId: replaced.id,
+            cartSecret: replaced.cart_secret,
+            itemsByProductId: nextItemsByProductId,
+            pricesByProductId: nextPricesByProductId,
+            isSyncing: false
+          });
         } catch (error) {
           set({ itemsByProductId: current, pricesByProductId: currentPrices, isSyncing: false });
           const message = error instanceof Error ? error.message : "Unexpected error";

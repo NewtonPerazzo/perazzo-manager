@@ -64,6 +64,7 @@ export function CatalogCartTemplate({ storeSlug }: { storeSlug: string }) {
   const [isClearingCart, setIsClearingCart] = useState(false);
 
   const cartId = useCatalogCartStore((state) => state.cartId);
+  const cartSecret = useCatalogCartStore((state) => state.cartSecret);
   const itemsByProductId = useCatalogCartStore((state) => state.itemsByProductId);
   const pricesByProductId = useCatalogCartStore((state) => state.pricesByProductId);
   const checkoutDraft = useCatalogCartStore((state) => state.checkoutDraft);
@@ -102,8 +103,8 @@ export function CatalogCartTemplate({ storeSlug }: { storeSlug: string }) {
         setPaymentMethods(payments);
         setDeliveryMethods(deliveries);
 
-        if (cartId) {
-          const cart = await catalogService.getCart(storeSlug, cartId);
+        if (cartId && cartSecret) {
+          const cart = await catalogService.getCart(storeSlug, cartId, cartSecret);
           setCartData(cart);
         } else {
           setCartData(null);
@@ -119,17 +120,17 @@ export function CatalogCartTemplate({ storeSlug }: { storeSlug: string }) {
     }
 
     void loadInitial();
-  }, [cartId, storeSlug, t]);
+  }, [cartId, cartSecret, storeSlug, t]);
 
   useEffect(() => {
     async function refreshTotalPreview() {
-      if (!cartId) {
+      if (!cartId || !cartSecret) {
         setTotalPreview(0);
         return;
       }
 
       try {
-        const total = await catalogService.previewCartTotal(storeSlug, cartId, {
+        const total = await catalogService.previewCartTotal(storeSlug, cartId, cartSecret, {
           is_to_deliver: checkoutDraft.isToDeliver,
           delivery_method_id: checkoutDraft.deliveryMethodId || null
         });
@@ -140,7 +141,7 @@ export function CatalogCartTemplate({ storeSlug }: { storeSlug: string }) {
     }
 
     void refreshTotalPreview();
-  }, [cartId, checkoutDraft.deliveryMethodId, checkoutDraft.isToDeliver, itemsByProductId, storeSlug]);
+  }, [cartId, cartSecret, checkoutDraft.deliveryMethodId, checkoutDraft.isToDeliver, itemsByProductId, storeSlug]);
 
   const products = useMemo(() => {
     if (!cartData) return [];
@@ -189,7 +190,7 @@ export function CatalogCartTemplate({ storeSlug }: { storeSlug: string }) {
   }, [checkoutDraft.deliveryMethodId, checkoutDraft.isToDeliver, deliveryMethods, updateCheckoutDraft]);
 
   async function handleFinishOrder() {
-    if (!cartId) return;
+    if (!cartId || !cartSecret) return;
     if (!isStoreOpen) {
       setError(t("catalog.storeClosedAction"));
       return;
@@ -232,7 +233,7 @@ export function CatalogCartTemplate({ storeSlug }: { storeSlug: string }) {
 
     setIsSubmitting(true);
     try {
-      const createdOrder = await catalogService.checkoutCart(storeSlug, cartId, {
+      const createdOrder = await catalogService.checkoutCart(storeSlug, cartId, cartSecret, {
         payment_method_id: checkoutDraft.paymentMethodId,
         is_to_deliver: checkoutDraft.isToDeliver,
         delivery_method_id: checkoutDraft.isToDeliver ? checkoutDraft.deliveryMethodId || null : null,
@@ -263,14 +264,14 @@ export function CatalogCartTemplate({ storeSlug }: { storeSlug: string }) {
   }
 
   async function handleClearCart() {
-    if (!cartId) {
+    if (!cartId || !cartSecret) {
       clearCart();
       return;
     }
 
     setIsClearingCart(true);
     try {
-      await catalogService.deleteCart(storeSlug, cartId);
+      await catalogService.deleteCart(storeSlug, cartId, cartSecret);
       clearCart();
       setCartData(null);
       setTotalPreview(0);

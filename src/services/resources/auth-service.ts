@@ -67,5 +67,18 @@ export const authService = {
     } catch (error) {
       throw normalizeApiError(error);
     }
+  },
+
+  async verifyEmail(token: string): Promise<MessageResponse> {
+    try {
+      const { data } = await createApiClient().post<MessageResponse>("/auth/email/verify", null, {
+        params: {
+          token
+        }
+      });
+      return data;
+    } catch (error) {
+      throw normalizeApiError(error);
+    }
   }
 };

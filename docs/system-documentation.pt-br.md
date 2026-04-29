@@ -27,7 +27,7 @@ NEXT_PUBLIC_PERAZZO_API_URL=http://localhost:8001/api/v1
 
 A tela de login é `src/app/login/page.tsx`. Ela valida com `loginSchema` de `src/schemas/forms.ts` e chama `authService.login()` em `src/services/resources/auth-service.ts`, que envia `POST /auth/login` para `POST /api/v1/auth/login`.
 
-Depois do login, o token retornado é salvo em `useAuthStore` de `src/store/auth-store.ts`, persistido como `pm-auth-store`. O mesmo token também é enviado para a rota local Next `src/app/api/session/route.ts` por `sessionService.setToken()` em `src/services/resources/session-service.ts`, salvando o cookie `pm_access_token`.
+Depois do login, o token retornado é salvo em `useAuthStore` de `src/store/auth-store.ts`, persistido em `sessionStorage` como `pm-auth-store`, sendo limpo ao encerrar a sessão do navegador. O mesmo token também é enviado para a rota local Next `src/app/api/session/route.ts` por `sessionService.setToken()` em `src/services/resources/session-service.ts`, salvando o cookie `pm_access_token` como `httpOnly`, `sameSite=lax`, seguro em produção e com duração de uma hora.
 
 Em seguida a página chama `authService.getMe()`, que envia `GET /auth/me` para `GET /api/v1/auth/me`, e salva nome/email/foto do usuário no Zustand.
 
@@ -35,7 +35,7 @@ A proteção do dashboard fica em `src/middleware.ts`. Ele lê o cookie `pm_acce
 
 O client Axios em `src/services/http/client.ts` trata sessões inválidas. Em caso de `401`, ele limpa `pm-auth-store`, limpa `pm-catalog-cart-store`, chama `DELETE /api/session` e redireciona para `/login`.
 
-O cadastro é implementado por `src/app/register/page.tsx`. Ele valida com `registerSchema`, chama `authService.register()` e envia `POST /auth/register` para `POST /api/v1/auth/register`. Em caso de sucesso, redireciona para `/login?registered=1`.
+O cadastro é implementado por `src/app/register/page.tsx`. Ele valida com `registerSchema`, chama `authService.register()` e envia `POST /auth/register` para `POST /api/v1/auth/register`. O backend envia o email de verificação e não retorna o token. O link do email abre `src/app/verify-email/page.tsx`, que lê o token da URL e chama `authService.verifyEmail()` -> `POST /auth/email/verify` -> `POST /api/v1/auth/email/verify`.
 
 A recuperação de senha começa em `src/app/forgot-password/page.tsx`. O formulário valida o email com `forgotPasswordSchema` de `src/schemas/forms.ts` e chama `authService.forgotPassword()` em `src/services/resources/auth-service.ts`, que envia `POST /auth/password/forgot` para `POST /api/v1/auth/password/forgot`. O backend envia o email de redefinição por SMTP e retorna apenas uma `message` genérica; o frontend nunca recebe nem exibe o token de reset. Depois de uma requisição bem-sucedida, a página muda para um estado de sucesso informando que o email foi enviado e pedindo para o usuário verificar a caixa de entrada.
 
@@ -156,12 +156,12 @@ O catálogo usa `catalogService` de `src/services/resources/catalog-service.ts`:
 
 ## Fluxo de Carrinho Público e Checkout
 
-O estado do carrinho público fica em `useCatalogCartStore` de `src/store/catalog-cart-store.ts`, persistido como `pm-catalog-cart-store`.
+O estado do carrinho público fica em `useCatalogCartStore` de `src/store/catalog-cart-store.ts`, persistido como `pm-catalog-cart-store`. Ele salva `cartId` e `cartSecret`; o segredo é gerado pelo backend e exigido em toda leitura, atualização, preview, checkout e remoção do carrinho.
 
 Quando um cliente altera quantidade, `setQuantity()` atualiza estado local de forma otimista e sincroniza com o backend:
 
-- Se não existe cart id, chama `catalogService.createCart()` -> `POST /catalog/{storeSlug}/carts` -> `POST /api/v1/catalog/{store_slug}/carts`.
-- Se existe carrinho, chama `catalogService.replaceCartProducts()` -> `PUT /catalog/{storeSlug}/carts/{cartId}/products` -> `PUT /api/v1/catalog/{store_slug}/carts/{cart_id}/products`.
+- Se não existe cart id, chama `catalogService.createCart()` -> `POST /catalog/{storeSlug}/carts` -> `POST /api/v1/catalog/{store_slug}/carts`, e salva o `cart_secret` retornado.
+- Se existe carrinho, chama `catalogService.replaceCartProducts()` -> `PUT /catalog/{storeSlug}/carts/{cartId}/products?cart_secret=...` -> `PUT /api/v1/catalog/{store_slug}/carts/{cart_id}/products`.
 - Se o backend retorna `204`, o carrinho local é limpo.
 - Se o backend rejeita a alteração, o estado local é revertido e um toast é exibido.
 
@@ -170,13 +170,13 @@ Quando um cliente altera quantidade, `setQuantity()` atualiza estado local de fo
 - `catalogService.getHome()` para loja/catálogo.
 - `catalogService.listPaymentMethods()` -> `GET /catalog/{storeSlug}/payment-methods`.
 - `catalogService.listDeliveryMethods()` -> `GET /catalog/{storeSlug}/delivery-methods`.
-- `catalogService.getCart()` -> `GET /catalog/{storeSlug}/carts/{cartId}`.
+- `catalogService.getCart()` -> `GET /catalog/{storeSlug}/carts/{cartId}?cart_secret=...`.
 
 As etapas de checkout são: revisar carrinho, escolher pagamento/entrega, preencher dados do cliente e enviar.
 
-Preview de total usa `catalogService.previewCartTotal()` -> `POST /catalog/{storeSlug}/carts/{cartId}/preview-total` -> `POST /api/v1/catalog/{store_slug}/carts/{cart_id}/preview-total`.
+Preview de total usa `catalogService.previewCartTotal()` -> `POST /catalog/{storeSlug}/carts/{cartId}/preview-total?cart_secret=...` -> `POST /api/v1/catalog/{store_slug}/carts/{cart_id}/preview-total`.
 
-Checkout final usa `catalogService.checkoutCart()` -> `POST /catalog/{storeSlug}/carts/{cartId}/checkout` -> `POST /api/v1/catalog/{store_slug}/carts/{cart_id}/checkout`. Se a loja aceita encaminhar por WhatsApp e possui número válido, o frontend abre WhatsApp com uma mensagem de pedido gerada.
+Checkout final usa `catalogService.checkoutCart()` -> `POST /catalog/{storeSlug}/carts/{cartId}/checkout?cart_secret=...` -> `POST /api/v1/catalog/{store_slug}/carts/{cart_id}/checkout`. Se a loja aceita encaminhar por WhatsApp e possui número válido, o frontend abre WhatsApp com uma mensagem de pedido gerada.
 
 ## Caixa
 

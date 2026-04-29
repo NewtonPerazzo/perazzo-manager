@@ -22,7 +22,7 @@ export interface UserRegisterPayload {
 export interface RegisterResponse {
   id: UUID;
   email: string;
-  email_verification_token: string;
+  message: string;
 }
 
 export interface ForgotPasswordPayload {
