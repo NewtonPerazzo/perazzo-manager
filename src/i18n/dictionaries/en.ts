@@ -248,6 +248,8 @@ export const enDictionary: Dictionary = {
   "catalog.emailNav": "Email",
   "catalog.cart": "Cart",
   "catalog.backToTop": "Back to top",
+  "catalog.storeMenu": "Store information",
+  "catalog.closeStoreMenu": "Close store information",
   "catalog.instagram": "Instagram",
   "catalog.whatsapp": "WhatsApp",
   "catalog.searchPlaceholder": "Search by name or description",

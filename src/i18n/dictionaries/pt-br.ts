@@ -248,6 +248,8 @@ export const ptBrDictionary: Dictionary = {
   "catalog.emailNav": "E-mail",
   "catalog.cart": "Carrinho",
   "catalog.backToTop": "Voltar ao topo",
+  "catalog.storeMenu": "Informações da loja",
+  "catalog.closeStoreMenu": "Fechar informações da loja",
   "catalog.instagram": "Instagram",
   "catalog.whatsapp": "WhatsApp",
   "catalog.searchPlaceholder": "Buscar por nome ou descrição",

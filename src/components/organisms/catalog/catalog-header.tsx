@@ -1,9 +1,9 @@
 "use client";
 
-import { Instagram, ShoppingCart } from "lucide-react";
+import { Instagram, Menu, ShoppingCart, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { useI18n } from "@/i18n/provider";
 import { buildBusinessHoursSummary } from "@/lib/store-hours";
@@ -30,7 +30,7 @@ export function CatalogHeader({
   storeSlug: string;
 }) {
   const { t, locale } = useI18n();
-  const [isCompact, setIsCompact] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const totalItems = useCatalogCartStore((state) => selectCatalogCartTotalItems(state.itemsByProductId));
   const productsTotal = useCatalogCartStore((state) =>
     selectCatalogCartProductsTotal(state.itemsByProductId, state.pricesByProductId)
@@ -44,110 +44,143 @@ export function CatalogHeader({
     : "";
   const businessHoursSummary = buildBusinessHoursSummary(store.business_hours, locale);
 
-  useEffect(() => {
-    function handleScroll() {
-      setIsCompact(window.scrollY > 72);
-    }
+  return (
+    <>
+      <header className="sticky top-0 z-40 border-b border-surface-700 bg-black/90 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-3 py-2">
+          <button
+            type="button"
+            onClick={() => setIsMenuOpen(true)}
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-surface-700 bg-surface-900 text-slate-100 transition hover:border-surface-600"
+            aria-label={t("catalog.storeMenu")}
+          >
+            <Menu size={20} />
+          </button>
 
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
+          <Link href={`/catalog/${storeSlug}`} className="flex min-w-0 flex-1 items-center justify-center gap-3">
+            <span className="shrink-0">
+              <StoreLogo store={store} size="sm" />
+            </span>
+            <span className="flex min-w-0 flex-col">
+              <span className="truncate text-sm font-semibold leading-tight text-white md:text-base">{store.name}</span>
+              <StoreOpenStatus
+                isOpen={store.is_open_now}
+                openLabel={t("store.openNow")}
+                closedLabel={t("store.closedNow")}
+              />
+            </span>
+          </Link>
 
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+          <CartButton
+            storeSlug={storeSlug}
+            totalItems={totalItems}
+            productsTotal={productsTotal}
+            cartLabel={t("catalog.cart")}
+          />
+        </div>
+      </header>
+
+      {isMenuOpen ? (
+        <div className="fixed inset-0 z-50">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/65"
+            aria-label={t("catalog.closeStoreMenu")}
+            onClick={() => setIsMenuOpen(false)}
+          />
+          <aside className="relative flex h-full w-[min(86vw,360px)] flex-col overflow-y-auto border-r border-surface-700 bg-black px-5 py-5 shadow-2xl">
+            <div className="mb-6 flex items-center justify-between gap-3">
+              <span className="text-sm font-semibold text-slate-200">{t("catalog.storeMenu")}</span>
+              <button
+                type="button"
+                onClick={() => setIsMenuOpen(false)}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-surface-700 bg-surface-900 text-slate-100"
+                aria-label={t("catalog.closeStoreMenu")}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="flex flex-col items-center justify-center gap-3 text-center">
+              <Link href={`/catalog/${storeSlug}`} onClick={() => setIsMenuOpen(false)}>
+              <StoreLogo store={store} size="lg" />
+            </Link>
+              <Link href={`/catalog/${storeSlug}`} onClick={() => setIsMenuOpen(false)}>
+                <h1 className="text-xl font-bold text-white">{store.name}</h1>
+              </Link>
+              <div className="text-center">
+                {businessHoursSummary ? <p className="text-sm text-slate-300">{businessHoursSummary}</p> : null}
+                <StoreOpenStatus
+                  isOpen={store.is_open_now}
+                  openLabel={t("store.openNow")}
+                  closedLabel={t("store.closedNow")}
+                />
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {store.instagram ? (
+                  <a
+                    href={
+                      store.instagram.startsWith("http")
+                        ? store.instagram
+                        : `https://instagram.com/${store.instagram.replace("@", "")}`
+                    }
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 rounded-xl border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-slate-100"
+                  >
+                    <span>{instagramText}</span>
+                    <Instagram size={14} className="text-pink-400" />
+                  </a>
+                ) : null}
+              </div>
+
+              {store.address ? <p className="text-sm text-slate-300">{store.address}</p> : null}
+            </div>
+          </aside>
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+function StoreLogo({ store, size }: { store: CatalogStoreResponse; size: "sm" | "lg" }) {
+  const dimension = size === "sm" ? 44 : 92;
+  const className =
+    size === "sm"
+      ? "h-11 w-11 rounded-full border border-surface-700 object-cover"
+      : "h-20 w-20 rounded-full border border-surface-700 object-cover";
+
+  if (store.logo) {
+    return <Image src={store.logo} alt={store.name} width={dimension} height={dimension} className={className} unoptimized />;
+  }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-surface-700 bg-black/85 backdrop-blur transition-all duration-200">
-      <div className={cn("mx-auto max-w-6xl px-3 transition-all duration-200", isCompact ? "py-2" : "py-3")}>
-        {isCompact ? (
-          <div className="flex items-center justify-between gap-3">
-            <Link href={`/catalog/${storeSlug}`} className="min-w-0">
-              {store.logo ? (
-                <Image
-                  src={store.logo}
-                  alt={store.name}
-                  width={44}
-                  height={44}
-                  className="h-11 w-11 rounded-full border border-surface-700 object-cover"
-                  unoptimized
-                />
-              ) : (
-                <span className="grid h-11 w-11 place-items-center rounded-full border border-surface-700 bg-surface-900 text-sm font-semibold">
-                  {store.name.slice(0, 1).toUpperCase()}
-                </span>
-              )}
-            </Link>
-            <CartButton
-              storeSlug={storeSlug}
-              totalItems={totalItems}
-              productsTotal={productsTotal}
-              cartLabel={t("catalog.cart")}
-            />
-          </div>
-        ) : (
-          <>
-        <div className="flex items-center justify-end">
-          <div className="flex flex-col items-end gap-1">
-            <CartButton
-              storeSlug={storeSlug}
-              totalItems={totalItems}
-              productsTotal={productsTotal}
-              cartLabel={t("catalog.cart")}
-            />
-          </div>
-        </div>
+    <span
+      className={cn(
+        "grid place-items-center rounded-full border border-surface-700 bg-surface-900 font-semibold text-white",
+        size === "sm" ? "h-11 w-11 text-sm" : "h-20 w-20 text-2xl"
+      )}
+    >
+      {store.name.slice(0, 1).toUpperCase()}
+    </span>
+  );
+}
 
-        <div className="mt-2 flex flex-col items-center justify-center gap-2 text-center">
-          {store.logo ? (
-            <Link href={`/catalog/${storeSlug}`}>
-              <Image
-                src={store.logo}
-                alt={store.name}
-                width={92}
-                height={92}
-                className="h-20 w-20 rounded-full border border-surface-700 object-cover"
-                unoptimized
-              />
-            </Link>
-          ) : null}
-          <Link href={`/catalog/${storeSlug}`}>
-            <h1 className="text-xl font-bold text-white">{store.name}</h1>
-          </Link>
-          <div className="text-center">
-            {businessHoursSummary ? (
-              <p className="text-sm text-slate-300">{businessHoursSummary}</p>
-            ) : null}
-            <p className="inline-flex items-center gap-2 text-sm">
-              <span
-                className={`h-2.5 w-2.5 rounded-full ${store.is_open_now ? "bg-emerald-400" : "bg-red-400"}`}
-              />
-              <span>{store.is_open_now ? t("store.openNow") : t("store.closedNow")}</span>
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {store.instagram ? (
-              <a
-                href={
-                  store.instagram.startsWith("http")
-                    ? store.instagram
-                    : `https://instagram.com/${store.instagram.replace("@", "")}`
-                }
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 rounded-xl border border-surface-700 bg-surface-900 px-3 py-2 text-sm text-slate-100"
-              >
-                <span>{instagramText}</span>
-                <Instagram size={14} className="text-pink-400" />
-              </a>
-            ) : null}
-          </div>
-
-          {store.address ? <p className="text-sm text-slate-300">{store.address}</p> : null}
-        </div>
-          </>
-        )}
-      </div>
-    </header>
+function StoreOpenStatus({
+  closedLabel,
+  isOpen,
+  openLabel
+}: {
+  closedLabel: string;
+  isOpen: boolean;
+  openLabel: string;
+}) {
+  return (
+    <p className="inline-flex items-center gap-1.5 text-xs text-slate-200 sm:gap-2 sm:text-sm">
+      <span className={cn("h-2.5 w-2.5 rounded-full", isOpen ? "bg-emerald-400" : "bg-red-400")} />
+      <span>{isOpen ? openLabel : closedLabel}</span>
+    </p>
   );
 }
 

@@ -248,6 +248,8 @@ export const esDictionary: Dictionary = {
   "catalog.emailNav": "Correo",
   "catalog.cart": "Carrito",
   "catalog.backToTop": "Volver arriba",
+  "catalog.storeMenu": "Información de la tienda",
+  "catalog.closeStoreMenu": "Cerrar información de la tienda",
   "catalog.instagram": "Instagram",
   "catalog.whatsapp": "WhatsApp",
   "catalog.searchPlaceholder": "Buscar por nombre o descripción",
