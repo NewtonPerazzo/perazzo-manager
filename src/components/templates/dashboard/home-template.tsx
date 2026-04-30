@@ -24,6 +24,7 @@ export function HomeTemplate({ initialStore }: { initialStore: StoreResponse | n
   const { t, locale } = useI18n();
   const router = useRouter();
   const token = useAuthStore((state) => state.token);
+  const userEmail = useAuthStore((state) => state.userEmail);
   const { runWithFeedback, toast } = useUiFeedback();
   const isSubmitting = useUiFeedbackStore((state) => Boolean(state.loadingByKey["store:submit"]));
   const [error, setError] = useState<string | null>(null);
@@ -59,11 +60,15 @@ export function HomeTemplate({ initialStore }: { initialStore: StoreResponse | n
       "store:submit",
       async () => {
         setError(null);
+        const storePayload: StoreCreatePayload = {
+          ...payload,
+          email: payload.email?.trim() || userEmail || undefined
+        };
         if (store) {
-          const updated = await storeService.updateStore(token, payload);
+          const updated = await storeService.updateStore(token, storePayload);
           setStore(updated);
         } else {
-          const created = await storeService.createStore(token, payload);
+          const created = await storeService.createStore(token, storePayload);
           setStore(created);
         }
       },

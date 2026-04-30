@@ -1,4 +1,5 @@
 import type { UUID } from "@/types/api/common";
+import type { PlanId } from "@/lib/plans";
 
 export interface UserLoginPayload {
   email: string;
@@ -47,5 +48,7 @@ export interface UserResponse {
   photo?: string;
   is_active: boolean;
   is_email_verified: boolean;
+  plan: PlanId;
+  plan_started_at?: string;
   created_at: string;
 }

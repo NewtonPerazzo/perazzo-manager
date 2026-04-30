@@ -29,13 +29,27 @@ The login screen is `src/app/login/page.tsx`. It validates with `loginSchema` fr
 
 After login, the returned token is stored in `useAuthStore` from `src/store/auth-store.ts` and persisted in `sessionStorage` as `pm-auth-store`, so it is cleared when the browser session ends. The same token is also sent to the local Next route `src/app/api/session/route.ts` through `sessionService.setToken()` from `src/services/resources/session-service.ts`, which stores the `pm_access_token` cookie as `httpOnly`, `sameSite=lax`, secure in production, and with a one-hour max age.
 
-The page then calls `authService.getMe()`, which sends `GET /auth/me` to `GET /api/v1/auth/me`, and stores the user's display name/email/photo in Zustand.
+The page then calls `authService.getMe()`, which sends `GET /auth/me` to `GET /api/v1/auth/me`, and stores the user's display name/email/photo/plan in Zustand.
 
 Dashboard protection is handled by `src/middleware.ts`. It reads the `pm_access_token` cookie using the constant from `src/lib/session.ts`; requests to `/dashboard/*` without the cookie are redirected to `/login`.
 
 The Axios client in `src/services/http/client.ts` handles invalid sessions. On `401`, it clears `pm-auth-store`, clears `pm-catalog-cart-store`, calls `DELETE /api/session`, and redirects to `/login`.
 
-Registration is implemented by `src/app/register/page.tsx`. It validates with `registerSchema`, calls `authService.register()`, and sends `POST /auth/register` to `POST /api/v1/auth/register`. The backend sends the verification email and does not return the verification token. The email link opens `src/app/verify-email/page.tsx`, which reads the token from the URL and calls `authService.verifyEmail()` -> `POST /auth/email/verify` -> `POST /api/v1/auth/email/verify`.
+Registration is implemented by `src/app/register/page.tsx`. It validates with `registerSchema`, calls `authService.register()`, and sends `POST /auth/register` to `POST /api/v1/auth/register`. New accounts are created on the Free plan and can sign in immediately. Email verification still exists in the codebase for future reactivation, but it is not part of the current registration flow.
+
+## Plans and Subscription Rules
+
+Frontend plan metadata lives in `src/lib/plans.ts`. It exports `planCatalog`, `getPlan()`, `normalizePlan()`, `isFree()`, `isEssential()`, and `isPro()` so upgrade messaging and feature gates can share the same plan names and limits across the app.
+
+Current local plan definitions mirror the backend and landing page:
+
+- Free: R$0, 10 orders per month, unlimited catalog, WhatsApp orders/order editing/cash register/couriers for 7 days.
+- Essential: R$25 per 30 days, 50 orders per month, advanced features unlimited.
+- Pro: R$50 per 30 days, unlimited orders and advanced features.
+
+The active user plan comes from `GET /api/v1/auth/me` through `authService.getMe()` and is stored as `userPlan` in `src/store/auth-store.ts`. Backend enforcement remains authoritative; frontend helpers are for display, upgrade prompts, and local UI decisions.
+
+When the backend returns `402 Payment Required` inside PM dashboard routes, `normalizeApiError()` in `src/services/http/client.ts` opens the global upgrade modal through `openUpgradeModal()` from `src/store/ui-feedback-store.ts`. The modal is rendered by `UpgradePlanModal` in `src/components/molecules/common/upgrade-plan-modal.tsx`, inside `ClientShell`, and shows the Essential and Pro plans with prices, benefits, and limits. The public catalog does not render this modal; limited catalog features should stay blocked or hidden there so the end customer flow is not interrupted.
 
 Password recovery starts in `src/app/forgot-password/page.tsx`. The form validates the email with `forgotPasswordSchema` from `src/schemas/forms.ts` and calls `authService.forgotPassword()` in `src/services/resources/auth-service.ts`, which sends `POST /auth/password/forgot` to `POST /api/v1/auth/password/forgot`. The backend sends the reset email through SMTP and returns only a generic `message`; the frontend never receives or displays the reset token. After a successful request, the page switches to an email-sent success state that asks the user to check their inbox.
 

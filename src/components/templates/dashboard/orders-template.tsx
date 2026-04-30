@@ -49,6 +49,40 @@ function getTodayDateInputValue(): string {
   return `${year}-${month}-${day}`;
 }
 
+function getOrderTimestamp(order: OrderResponse): number {
+  return new Date(order.updated_at || order.created_at).getTime();
+}
+
+function dedupeOrders(orders: OrderResponse[]): OrderResponse[] {
+  const byId = new Map<string, OrderResponse>();
+  const byNumber = new Map<string, OrderResponse>();
+
+  for (const order of orders) {
+    const existingById = byId.get(order.id);
+    const selectedForId =
+      existingById && getOrderTimestamp(existingById) > getOrderTimestamp(order) ? existingById : order;
+    byId.set(order.id, selectedForId);
+  }
+
+  for (const order of byId.values()) {
+    const existingByNumber = byNumber.get(order.order_number);
+    const selectedForNumber =
+      existingByNumber && getOrderTimestamp(existingByNumber) > getOrderTimestamp(order)
+        ? existingByNumber
+        : order;
+    byNumber.set(order.order_number, selectedForNumber);
+  }
+
+  return Array.from(byNumber.values()).sort((a, b) => getOrderTimestamp(b) - getOrderTimestamp(a));
+}
+
+function upsertOrder(orders: OrderResponse[], nextOrder: OrderResponse): OrderResponse[] {
+  return dedupeOrders([
+    nextOrder,
+    ...orders.filter((order) => order.id !== nextOrder.id && order.order_number !== nextOrder.order_number)
+  ]);
+}
+
 export function OrdersTemplate({
   initialData,
   paymentMethods,
@@ -72,9 +106,9 @@ export function OrdersTemplate({
   const [open, setOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<OrderResponse | null>(null);
   const [deletingOrder, setDeletingOrder] = useState<OrderResponse | null>(null);
-  const [orders, setOrders] = useState<OrderResponse[]>(initialData);
+  const [orders, setOrders] = useState<OrderResponse[]>(() => dedupeOrders(initialData));
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
-  const [totalOrders, setTotalOrders] = useState(initialData.length);
+  const [totalOrders, setTotalOrders] = useState(() => dedupeOrders(initialData).length);
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState(getTodayDateInputValue());
@@ -107,7 +141,7 @@ export function OrdersTemplate({
         search: searchTerm || undefined,
         orderDate: selectedDate
       });
-      setOrders(response.items);
+      setOrders(dedupeOrders(response.items));
       setTotalOrders(response.total);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("common.unexpectedError"));
@@ -208,10 +242,10 @@ export function OrdersTemplate({
         setError(null);
         if (editingOrder) {
           const updated = await orderService.update(token, editingOrder.id, payload);
-          setOrders((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+          setOrders((prev) => upsertOrder(prev, updated));
         } else {
           const created = await orderService.create(token, payload);
-          setOrders((prev) => [created, ...prev]);
+          setOrders((prev) => upsertOrder(prev, created));
           setTotalOrders((prev) => prev + 1);
         }
       },
@@ -283,7 +317,7 @@ export function OrdersTemplate({
     try {
       setError(null);
       const updated = await orderService.updateStatus(token, order.id, status);
-      setOrders((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+      setOrders((prev) => upsertOrder(prev, updated));
     } catch (err) {
       setError(err instanceof Error ? err.message : t("common.unexpectedError"));
     }

@@ -22,6 +22,15 @@ function normalizeErrorMessage(error: unknown): string {
   return "Unexpected error";
 }
 
+function shouldSuppressToast(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "suppressToast" in error &&
+    (error as { suppressToast?: boolean }).suppressToast === true
+  );
+}
+
 export function useUiFeedback() {
   const setLoading = useUiFeedbackStore((state) => state.setLoading);
   const pushToast = useUiFeedbackStore((state) => state.pushToast);
@@ -48,6 +57,10 @@ export function useUiFeedback() {
         }
         return { ok: true, data: result };
       } catch (error) {
+        if (shouldSuppressToast(error)) {
+          return { ok: false };
+        }
+
         const errorMessage = options?.mapErrorMessage?.(error) ?? options?.errorMessage ?? normalizeErrorMessage(error);
         const errorVariant = options?.mapErrorVariant?.(error) ?? options?.errorVariant ?? "error";
         toast(errorMessage, errorVariant);

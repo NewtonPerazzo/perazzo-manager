@@ -54,7 +54,7 @@ function LoginPageContent() {
       setToken(auth.access_token);
       const me = await authService.getMe(auth.access_token);
       const fullName = [me.name, me.last_name].filter(Boolean).join(" ").trim();
-      setUser(fullName || me.email, me.email);
+      setUser(fullName || me.email, me.email, me.photo, me.plan);
       await sessionService.setToken(auth.access_token);
 
       router.push("/dashboard");

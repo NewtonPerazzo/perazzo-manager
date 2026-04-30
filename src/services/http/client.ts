@@ -2,6 +2,7 @@ import axios, { AxiosError } from "axios";
 
 import { API_BASE_URL } from "@/services/http/config";
 import { fallbackHttpMessage, translateDetail, translateValidationArray } from "@/services/http/error-translator";
+import { useUiFeedbackStore } from "@/store/ui-feedback-store";
 
 interface ApiValidationItem {
   loc?: Array<string | number>;
@@ -10,6 +11,18 @@ interface ApiValidationItem {
 
 interface ApiErrorData {
   detail?: string | ApiValidationItem[];
+}
+
+export class ApiRequestError extends Error {
+  status?: number;
+  suppressToast: boolean;
+
+  constructor(message: string, options?: { status?: number; suppressToast?: boolean }) {
+    super(message);
+    this.name = "ApiRequestError";
+    this.status = options?.status;
+    this.suppressToast = options?.suppressToast ?? false;
+  }
 }
 
 let handlingUnauthorized = false;
@@ -25,6 +38,15 @@ async function handleUnauthorizedClientSide() {
   } finally {
     window.location.href = "/login";
   }
+}
+
+function notifyUpgradeRequired(message: string): boolean {
+  if (typeof window === "undefined") return false;
+
+  if (!window.location.pathname.startsWith("/dashboard")) return false;
+
+  useUiFeedbackStore.getState().openUpgradeModal(message);
+  return true;
 }
 
 export function createApiClient(token?: string | null) {
@@ -58,18 +80,25 @@ export function normalizeApiError(error: unknown): Error {
   if (axios.isAxiosError(error)) {
     const axiosError = error as AxiosError<ApiErrorData>;
     const detail = axiosError.response?.data?.detail;
+    const status = axiosError.response?.status;
 
     if (detail) {
       if (typeof detail === "string") {
-        return new Error(translateDetail(detail));
+        const message = translateDetail(detail);
+        const suppressToast = status === 402 ? notifyUpgradeRequired(message) : false;
+        return new ApiRequestError(message, { status, suppressToast });
       }
 
       if (Array.isArray(detail)) {
-        return new Error(translateValidationArray(detail));
+        const message = translateValidationArray(detail);
+        const suppressToast = status === 402 ? notifyUpgradeRequired(message) : false;
+        return new ApiRequestError(message, { status, suppressToast });
       }
     }
 
-    return new Error(fallbackHttpMessage(axiosError.response?.status));
+    const message = fallbackHttpMessage(status);
+    const suppressToast = status === 402 ? notifyUpgradeRequired(message) : false;
+    return new ApiRequestError(message, { status, suppressToast });
   }
 
   if (error instanceof Error) {

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { Button } from "@/components/atoms/button";
 import { UserAvatar } from "@/components/atoms/user-avatar";
+import { LocaleSelect } from "@/components/molecules/common/locale-select";
 import { useI18n } from "@/i18n/provider";
 import { authService } from "@/services/resources/auth-service";
 import { sessionService } from "@/services/resources/session-service";
@@ -14,7 +15,7 @@ import { useCatalogCartStore } from "@/store/catalog-cart-store";
 
 export function DashboardTopbar({ onToggleMenu }: { onToggleMenu: () => void }) {
   const router = useRouter();
-  const { locale, setLocale, t } = useI18n();
+  const { t } = useI18n();
   const token = useAuthStore((state) => state.token);
   const userName = useAuthStore((state) => state.userName);
   const userPhoto = useAuthStore((state) => state.userPhoto);
@@ -36,7 +37,7 @@ export function DashboardTopbar({ onToggleMenu }: { onToggleMenu: () => void }) 
         const me = await authService.getMe(token);
         if (!active) return;
         const fullName = [me.name, me.last_name].filter(Boolean).join(" ").trim();
-        setUser(fullName || me.email, me.email, me.photo);
+        setUser(fullName || me.email, me.email, me.photo, me.plan);
         setIsSessionValid(true);
       } catch (error) {
         if (!active) return;
@@ -97,16 +98,7 @@ export function DashboardTopbar({ onToggleMenu }: { onToggleMenu: () => void }) 
         </div>
 
         <div className="flex items-center gap-2">
-          <select
-            value={locale}
-            onChange={(event) => setLocale(event.target.value as typeof locale)}
-            className="hidden rounded-xl border border-surface-700 bg-surface-800 px-2 py-2 text-sm text-white md:block"
-            aria-label={t("common.locale")}
-          >
-            <option value="pt-br">PT-BR</option>
-            <option value="en">EN</option>
-            <option value="es">ES</option>
-          </select>
+          <LocaleSelect className="hidden rounded-xl border border-surface-700 bg-surface-800 px-2 py-2 text-sm text-white md:block" />
           <Button variant="ghost" onClick={handleLogout}>
             {t("common.logout")}
           </Button>

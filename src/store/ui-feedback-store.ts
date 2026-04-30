@@ -10,17 +10,26 @@ export interface UiToast {
   variant: ToastVariant;
 }
 
+interface UpgradeModalState {
+  open: boolean;
+  message?: string;
+}
+
 interface UiFeedbackState {
   loadingByKey: Record<string, boolean>;
   toasts: UiToast[];
+  upgradeModal: UpgradeModalState;
   setLoading: (key: string, value: boolean) => void;
   pushToast: (toast: Omit<UiToast, "id">) => string;
   removeToast: (id: string) => void;
+  openUpgradeModal: (message?: string) => void;
+  closeUpgradeModal: () => void;
 }
 
 export const useUiFeedbackStore = create<UiFeedbackState>((set) => ({
   loadingByKey: {},
   toasts: [],
+  upgradeModal: { open: false },
   setLoading: (key, value) =>
     set((state) => ({
       loadingByKey: {
@@ -38,5 +47,18 @@ export const useUiFeedbackStore = create<UiFeedbackState>((set) => ({
   removeToast: (id) =>
     set((state) => ({
       toasts: state.toasts.filter((toast) => toast.id !== id)
-    }))
+    })),
+  openUpgradeModal: (message) =>
+    set({
+      upgradeModal: {
+        open: true,
+        message
+      }
+    }),
+  closeUpgradeModal: () =>
+    set({
+      upgradeModal: {
+        open: false
+      }
+    })
 }));

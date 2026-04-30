@@ -29,13 +29,27 @@ A tela de login é `src/app/login/page.tsx`. Ela valida com `loginSchema` de `sr
 
 Depois do login, o token retornado é salvo em `useAuthStore` de `src/store/auth-store.ts`, persistido em `sessionStorage` como `pm-auth-store`, sendo limpo ao encerrar a sessão do navegador. O mesmo token também é enviado para a rota local Next `src/app/api/session/route.ts` por `sessionService.setToken()` em `src/services/resources/session-service.ts`, salvando o cookie `pm_access_token` como `httpOnly`, `sameSite=lax`, seguro em produção e com duração de uma hora.
 
-Em seguida a página chama `authService.getMe()`, que envia `GET /auth/me` para `GET /api/v1/auth/me`, e salva nome/email/foto do usuário no Zustand.
+Em seguida a página chama `authService.getMe()`, que envia `GET /auth/me` para `GET /api/v1/auth/me`, e salva nome/email/foto/plano do usuário no Zustand.
 
 A proteção do dashboard fica em `src/middleware.ts`. Ele lê o cookie `pm_access_token` usando a constante de `src/lib/session.ts`; requests para `/dashboard/*` sem esse cookie são redirecionados para `/login`.
 
 O client Axios em `src/services/http/client.ts` trata sessões inválidas. Em caso de `401`, ele limpa `pm-auth-store`, limpa `pm-catalog-cart-store`, chama `DELETE /api/session` e redireciona para `/login`.
 
-O cadastro é implementado por `src/app/register/page.tsx`. Ele valida com `registerSchema`, chama `authService.register()` e envia `POST /auth/register` para `POST /api/v1/auth/register`. O backend envia o email de verificação e não retorna o token. O link do email abre `src/app/verify-email/page.tsx`, que lê o token da URL e chama `authService.verifyEmail()` -> `POST /auth/email/verify` -> `POST /api/v1/auth/email/verify`.
+O cadastro é implementado por `src/app/register/page.tsx`. Ele valida com `registerSchema`, chama `authService.register()` e envia `POST /auth/register` para `POST /api/v1/auth/register`. Novas contas são criadas no plano Free e já podem fazer login. A verificação por email ainda existe no código para reativação futura, mas não faz parte do fluxo atual de cadastro.
+
+## Planos e Regras de Assinatura
+
+Os metadados de planos do frontend ficam em `src/lib/plans.ts`. O arquivo exporta `planCatalog`, `getPlan()`, `normalizePlan()`, `isFree()`, `isEssential()` e `isPro()` para que mensagens de upgrade e bloqueios visuais usem os mesmos nomes e limites em todo o app.
+
+As definições locais atuais espelham o backend e a landing page:
+
+- Free: R$0, 10 pedidos por mês, catálogo ilimitado, pedidos por WhatsApp/edição de pedidos/caixa/entregadores por 7 dias.
+- Essential: R$25 por 30 dias, 50 pedidos por mês, recursos avançados ilimitados.
+- Pro: R$50 por 30 dias, pedidos e recursos avançados ilimitados.
+
+O plano ativo vem de `GET /api/v1/auth/me` via `authService.getMe()` e é salvo como `userPlan` em `src/store/auth-store.ts`. O bloqueio oficial continua no backend; os helpers do frontend servem para exibição, chamadas de upgrade e decisões locais de UI.
+
+Quando o backend retorna `402 Payment Required` em rotas internas do PM, `normalizeApiError()` em `src/services/http/client.ts` abre o modal global de upgrade usando `openUpgradeModal()` de `src/store/ui-feedback-store.ts`. O modal é renderizado por `UpgradePlanModal` em `src/components/molecules/common/upgrade-plan-modal.tsx`, dentro de `ClientShell`, e mostra os planos Essential e Pro com valores, benefícios e limites. O catálogo público não renderiza esse modal; nele, recursos limitados devem ficar bloqueados ou escondidos para não interromper a experiência do cliente final.
 
 A recuperação de senha começa em `src/app/forgot-password/page.tsx`. O formulário valida o email com `forgotPasswordSchema` de `src/schemas/forms.ts` e chama `authService.forgotPassword()` em `src/services/resources/auth-service.ts`, que envia `POST /auth/password/forgot` para `POST /api/v1/auth/password/forgot`. O backend envia o email de redefinição por SMTP e retorna apenas uma `message` genérica; o frontend nunca recebe nem exibe o token de reset. Depois de uma requisição bem-sucedida, a página muda para um estado de sucesso informando que o email foi enviado e pedindo para o usuário verificar a caixa de entrada.
 
