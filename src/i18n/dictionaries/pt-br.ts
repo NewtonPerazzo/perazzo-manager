@@ -45,7 +45,7 @@ export const ptBrDictionary: Dictionary = {
   "auth.registerTitle": "Criar conta",
   "auth.registerSubtitle": "Cadastre-se para acessar a área do cliente",
   "auth.registerSubmit": "Cadastrar",
-  "auth.registerSuccess": "Cadastro realizado com sucesso. Verifique seu e-mail para ativar a conta.",
+  "auth.registerSuccess": "Cadastro realizado com sucesso. Você já pode entrar.",
   "auth.verifyEmailTitle": "Verificar e-mail",
   "auth.verifyEmailSuccess": "Seu e-mail foi verificado. Você já pode fazer login.",
   "auth.verifyEmailError": "Este link de verificação é inválido ou expirou.",

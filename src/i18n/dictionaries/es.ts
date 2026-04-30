@@ -45,7 +45,7 @@ export const esDictionary: Dictionary = {
   "auth.registerTitle": "Crear cuenta",
   "auth.registerSubtitle": "Regístrate para acceder al área del cliente",
   "auth.registerSubmit": "Registrarse",
-  "auth.registerSuccess": "Cuenta creada con éxito. Revisa tu correo para activar la cuenta.",
+  "auth.registerSuccess": "Cuenta creada con éxito. Ya puedes ingresar.",
   "auth.verifyEmailTitle": "Verificar correo",
   "auth.verifyEmailSuccess": "Tu correo fue verificado. Ya puedes iniciar sesión.",
   "auth.verifyEmailError": "Este enlace de verificación es inválido o expiró.",

@@ -45,7 +45,7 @@ export const enDictionary: Dictionary = {
   "auth.registerTitle": "Create account",
   "auth.registerSubtitle": "Sign up to access the client area",
   "auth.registerSubmit": "Register",
-  "auth.registerSuccess": "Account created successfully. Check your email to verify your account.",
+  "auth.registerSuccess": "Account created successfully. You can sign in now.",
   "auth.verifyEmailTitle": "Verify email",
   "auth.verifyEmailSuccess": "Your email was verified. You can sign in now.",
   "auth.verifyEmailError": "This verification link is invalid or expired.",
